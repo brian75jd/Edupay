@@ -1,11 +1,10 @@
 from django.shortcuts import render
 from rest_framework.response import Response
-from rest_framework import generics
 from rest_framework.views import APIView
 import logging
 from drf_spectacular.utils import (
     extend_schema,
-    OpenApiExample
+  
 )
 from Payments.serializers import (
     InitiatePaymentResponseSerializer,
@@ -13,7 +12,7 @@ from Payments.serializers import (
     PaymentUserCredentials
 )
 
-m Payments.services.Payments import PaychanguInitiatePayment
+from Payments.services.Payments import PaychanguInitiatePayment
 logger = logging.getLogger(__name__)
 
 
