@@ -1,6 +1,6 @@
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .models import PaymentMethod, School
@@ -47,10 +47,23 @@ class SchoolViewSet(viewsets.ModelViewSet):
         return SchoolDetailSerializer
 
     def get_permissions(self):
-        # Registration is open to anyone; everything else follows IsAdminOrReadOnly.
+        # Registering a school requires an account (headteacher/accountant),
+        # but doesn't require staff privileges. Everything else follows
+        # IsAdminOrReadOnly.
         if self.action == "create":
-            return [AllowAny()]
+            return [IsAuthenticated()]
         return super().get_permissions()
+
+    def perform_create(self, serializer):
+        # The school starts as 'pending' (enforced in the serializer) until
+        # an EduPay admin manually reviews the uploaded official_document
+        # and approves it. The registering user is linked to the new school
+        # so they become its headteacher/accountant.
+        school = serializer.save()
+        user = self.request.user
+        if hasattr(user, "school"):
+            user.school = school
+            user.save(update_fields=["school"])
 
     @action(detail=True, methods=["patch"], url_path="status")
     def update_status(self, request, pk=None):
