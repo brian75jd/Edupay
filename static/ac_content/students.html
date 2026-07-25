@@ -25,5 +25,20 @@
     render(false);
   });
   $('#ac-stu-export').off('click').on('click', function() { window.print(); });
+  $('#ac-stu-export-excel').off('click').on('click', function() {
+    var students = JSON.parse(localStorage.getItem('students') || '[]');
+    var csv = 'Student Name,Level,Phone,Amount Paid,Date,Term\n';
+    students.forEach(function(s) {
+      csv += '"' + s.name + '","' + s.level + '","+265 ' + s.phone + '",' + s.amount + ',"' + fmtDate(s.date) + '","' + s.term + '"\n';
+    });
+    var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'students_export.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  });
 })();
 </script>
