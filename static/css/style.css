@@ -760,6 +760,17 @@ body.sidebar-open {
   color: var(--text-muted);
 }
 
+.auth-logo-big {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.auth-logo-big img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+
 .auth-header {
   text-align: center;
   margin-bottom: 28px;

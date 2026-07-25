@@ -19,7 +19,7 @@ from drf_spectacular.views import (
 
 urlpatterns = [
     path('', home_view, name='home'),
-    path('login/', login_view, name='login'),
+    path('school/login/', login_view, name='login'),
     path('signup/', signup_view, name='signup'),
     path('pay-fees/', pay_fees_view, name='pay_fees'),
     path('school/create/', create_school_view, name='create_school'),
