@@ -23,6 +23,33 @@ $(document).ready(function () {
   });
   localStorage.setItem('staffAccounts', JSON.stringify(staffAccounts));
 
+  // Seed parent accounts
+  var parentAccounts = JSON.parse(localStorage.getItem('parentAccounts') || '{}');
+  var demoParents = {
+    "888123456": { password: "parent123", firstName: "Alice", lastName: "Mwale", email: "alice@example.com" }
+  };
+  Object.keys(demoParents).forEach(function (key) {
+    if (!parentAccounts[key]) parentAccounts[key] = demoParents[key];
+  });
+  localStorage.setItem('parentAccounts', JSON.stringify(parentAccounts));
+
+  // Seed parent schools
+  if (!localStorage.getItem('parentSchools')) {
+    localStorage.setItem('parentSchools', JSON.stringify([
+      { id: 1, name: "Maranatha Academy", location: "Blantyre", type: "Secondary School", logo: "https://via.placeholder.com/50/1a3a6b/ffffff?text=MA", amount: 120000 },
+      { id: 2, name: "St Andrews Sec.", location: "Lilongwe", type: "Secondary School", logo: "https://via.placeholder.com/50/1a3a6b/ffffff?text=SA", amount: 95000 },
+      { id: 3, name: "Kapeni University", location: "Zomba", type: "University", logo: "https://via.placeholder.com/50/1a3a6b/ffffff?text=KU", amount: 350000 },
+    ]));
+  }
+
+  // Seed parent transactions
+  if (!localStorage.getItem('parentTransactions')) {
+    localStorage.setItem('parentTransactions', JSON.stringify([
+      { id: "RCP20260725-001", student: "Chifundo Banda", level: "Form 3", amount: 120000, date: "2026-07-25", method: "Airtel Money", status: "Paid", term: "Term 2", school: "Maranatha Academy" },
+      { id: "RCP20260720-002", student: "Grace Mlenga", level: "Form 1", amount: 95000, date: "2026-07-20", method: "TNM Mpamba", status: "Paid", term: "Term 2", school: "St Andrews Sec." },
+    ]));
+  }
+
   // Sidebar toggle
   $('#sidebarToggle').on('click', function () {
     $('#sidebar, #sidebarOverlay').addClass('open');
