@@ -49,7 +49,7 @@ class PaychanguInitiatePayment:
                 url = 'https://api.paychangu.com/payment'
                 payload ={
                     'amount':f"{total_amount}",
-                    'currency':'MKW',
+                    'currency':'MWK',
                     "tx_ref": tx_ref,
                     'first_name':student_first_name,
                     'last_name':student_last_name,
@@ -62,34 +62,41 @@ class PaychanguInitiatePayment:
                 headers ={
                     'accept':'application/json',
                     'Content-Type':'application/json',
-                    'Authorization':PAYCHANGU_SECRET_KEY
+                    'Authorization':f"Bearer {PAYCHANGU_SECRET_KEY}"
                 }
                 try:
-                    response = requests.post(
-                        url=url, json=payload, headers=headers, timeout=300
+                    request = requests.post(
+                        url=url, json=payload, headers=headers, timeout=3000
                     )
 
                 except requests.exceptions:
                     raise RequestTimeoutException('Request timeout.Try again')
 
-                data = response.json()
-                if not data['status'] =="success":
-                    print(response.text)
-                    raise RequestTimeoutException(f'{str(response.text)}')
+                response = request.json()
+            
+                if not response.get("status") =="success":
+                    print("ERROR:",request.text)
+                    return{
+                        'success':False,
+                        'detail':str(request.text)
+                    }
 
-                checkout_url = data['checkout_url']
+                print('DATA:',response)
+                checkout_url = response["data"]["checkout_url"]
+               
+                if checkout_url:
+                    return{
+                        'success':True,
+                        'checkout_url':checkout_url
+                    }
+                print("checkout_url not found")
                 return{
-                    'success':True,
-                    'checkout_url':checkout_url
+                    'success':False,
+                    'error':'error'
                 }
-
+            
         except Exception:
             logger.exception("ERROR")
             raise
                 
-
-
-
-        except Exception:
-            raise
                 
