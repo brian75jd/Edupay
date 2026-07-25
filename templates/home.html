@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edupay - Pay School Fees Easily{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <h1>Pay School Fees<br><span>Easily & Securely</span></h1>
+    <p>A centralized platform for school fees payments. Fast, secure, and convenient for parents and students across Malawi.</p>
+    <a href="{% url 'school_list' %}" class="btn btn-primary">Get Started</a>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-title">
+      <h2>How It Works</h2>
+      <p>Pay school fees in three simple steps</p>
+    </div>
+    <div class="steps-grid">
+      <div class="card step-card">
+        <div class="step-number">1</div>
+        <h3>Select Your School</h3>
+        <p>Find and select your school from our list of registered institutions.</p>
+      </div>
+      <div class="card step-card">
+        <div class="step-number">2</div>
+        <h3>Enter Student Details</h3>
+        <p>Provide the student's name and select their level of study.</p>
+      </div>
+      <div class="card step-card">
+        <div class="step-number">3</div>
+        <h3>Make Payment</h3>
+        <p>Choose your payment method and complete the transaction securely.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-title">
+      <h2>Why Choose Edupay?</h2>
+      <p>Everything you need for hassle-free school fee payments</p>
+    </div>
+    <div class="features-grid">
+      <div class="card feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-lock"></i></div>
+        <div>
+          <h3>Secure Payments</h3>
+          <p>Your transactions are protected with industry-standard security protocols.</p>
+        </div>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-file-invoice"></i></div>
+        <div>
+          <h3>Instant Receipts</h3>
+          <p>Receive digital receipts immediately after every successful payment.</p>
+        </div>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-credit-card"></i></div>
+        <div>
+          <h3>Multiple Payment Methods</h3>
+          <p>Pay via Airtel Money, TNM Mpamba, or National Bank.</p>
+        </div>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-clock"></i></div>
+        <div>
+          <h3>Quick &amp; Easy</h3>
+          <p>Complete your payment in under a minute from anywhere.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cta-banner">
+      <h2>Ready to Pay School Fees?</h2>
+      <p>Get started now and experience seamless school fee payments.</p>
+      <a href="{% url 'school_list' %}" class="btn">Pay Now</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

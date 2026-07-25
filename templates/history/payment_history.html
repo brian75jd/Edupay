@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment History - Edupay{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="{% url 'home' %}">Home</a>
+      <span>/</span>
+      <span>Payment History</span>
+    </div>
+    <div class="section-title">
+      <h2>Payment History</h2>
+      <p>View your past transactions and receipts</p>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Receipt #</th>
+            <th>School</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Payment records will be populated here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}
