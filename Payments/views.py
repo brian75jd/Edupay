@@ -13,13 +13,13 @@ from Payments.serializers import (InitiatePaymentResponseSerializer,
 
 
 
-
+from Payments.services.Payments import PaychanguInitiatePayment
 logger = logging.getLogger(__name__)
 
 
 
 @extend_schema(
-    request=InitiatePaymentResponseSerializer,
+    request=PaymentUserCredentials,
     responses={
         200: InitiatePaymentResponseSerializer,
         400: View404ResponseSerializer
@@ -35,6 +35,15 @@ class InitiatePayment(APIView):
             serializer = PaymentUserCredentials(data = request.data)
 
             serializer.is_valid(raise_exception=True)
+            checkout = PaychanguInitiatePayment.initiate_payment(
+                validated_data=serializer.validated_data
+            )
+
+            if checkout.get('success'):
+                return Response({
+                    'success':True,
+                    'checkout_url': checkout.get('checkout_url')
+                })
 
         except Exception:
             logger.exception('ERROR: ')
