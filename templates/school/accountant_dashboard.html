@@ -1,0 +1,277 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>School Accountant Dashboard - Edupay</title>
+  <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="nav-brand">
+        <img src="{% static 'images/logo.png' %}" alt="Edupay" class="nav-brand-img">
+        <div class="nav-brand-text">
+          <span>EduPay <strong>Malawi</strong></span>
+          <small>Pay Fast, Pay Smart</small>
+        </div>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <div class="nav-links" id="navLinks">
+        <a href="/">Home</a>
+        <a href="/school/accountant/" class="active">Dashboard</a>
+        <a href="#">Transactions</a>
+        <a href="#">Students</a>
+        <a href="#">Reports</a>
+        <a href="#">Account</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="dashboard-section">
+    <div class="container">
+
+      <div class="dashboard-header">
+        <div>
+          <h1>Accountant Dashboard</h1>
+          <p>Welcome back, Mrs. Msowoya</p>
+        </div>
+        <div class="dashboard-school-badge">
+          <img src="{% static 'images/logo.png' %}" alt="School" class="dashboard-school-logo">
+          <div>
+            <strong>Maranatha Academy</strong>
+            <small>Blantyre</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="card stat-card stat-card-primary">
+          <div class="stat-card-icon">
+            <i class="fa-solid fa-coins"></i>
+          </div>
+          <div class="stat-card-info">
+            <span class="stat-label">Today's Collections</span>
+            <span class="stat-value">MWK 840,000</span>
+          </div>
+        </div>
+        <div class="card stat-card stat-card-success">
+          <div class="stat-card-icon">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
+          <div class="stat-card-info">
+            <span class="stat-label">Transactions Today</span>
+            <span class="stat-value">7</span>
+          </div>
+        </div>
+        <div class="card stat-card stat-card-warning">
+          <div class="stat-card-icon">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+          <div class="stat-card-info">
+            <span class="stat-label">Pending Verification</span>
+            <span class="stat-value">3</span>
+          </div>
+        </div>
+        <div class="card stat-card stat-card-danger">
+          <div class="stat-card-icon">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <div class="stat-card-info">
+            <span class="stat-label">Monthly Total</span>
+            <span class="stat-value">MWK 4,850,000</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card dashboard-card">
+        <div class="dashboard-card-header">
+          <h3>Recent Transactions</h3>
+          <div class="dashboard-card-actions">
+            <select class="form-select dashboard-filter">
+              <option>All Methods</option>
+              <option>Airtel Money</option>
+              <option>TNM Mpamba</option>
+              <option>National Bank</option>
+            </select>
+            <a href="#" class="btn btn-sm btn-outline">Export CSV</a>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Receipt #</th>
+                <th>Student</th>
+                <th>Level</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>RCP20260723-001</td>
+                <td>Chifundo Banda</td>
+                <td>Form 3</td>
+                <td>MWK 120,000</td>
+                <td><i class="fa-solid fa-mobile-screen-button method-icon-airtel"></i> Airtel</td>
+                <td>23 Jul, 09:41 AM</td>
+                <td><span class="badge badge-success">Verified</span></td>
+              </tr>
+              <tr>
+                <td>RCP20260723-002</td>
+                <td>Grace Mlenga</td>
+                <td>Form 1</td>
+                <td>MWK 60,000</td>
+                <td><i class="fa-solid fa-mobile-screen-button method-icon-tnm"></i> TNM</td>
+                <td>23 Jul, 10:15 AM</td>
+                <td><span class="badge badge-success">Verified</span></td>
+              </tr>
+              <tr>
+                <td>RCP20260723-003</td>
+                <td>James Phiri</td>
+                <td>Form 4</td>
+                <td>MWK 120,000</td>
+                <td><i class="fa-solid fa-building-columns method-icon-bank"></i> NB</td>
+                <td>22 Jul, 02:30 PM</td>
+                <td><span class="badge badge-success">Verified</span></td>
+              </tr>
+              <tr>
+                <td>RCP20260722-004</td>
+                <td>Mary Kamwendo</td>
+                <td>Form 2</td>
+                <td>MWK 45,000</td>
+                <td><i class="fa-solid fa-mobile-screen-button method-icon-airtel"></i> Airtel</td>
+                <td>22 Jul, 11:20 AM</td>
+                <td><span class="badge badge-pending">Pending</span></td>
+              </tr>
+              <tr>
+                <td>RCP20260721-005</td>
+                <td>Peter Gondwe</td>
+                <td>Form 3</td>
+                <td>MWK 120,000</td>
+                <td><i class="fa-solid fa-mobile-screen-button method-icon-tnm"></i> TNM</td>
+                <td>21 Jul, 03:45 PM</td>
+                <td><span class="badge badge-success">Verified</span></td>
+              </tr>
+              <tr>
+                <td>RCP20260721-006</td>
+                <td>Linda Mwale</td>
+                <td>Form 1</td>
+                <td>MWK 120,000</td>
+                <td><i class="fa-solid fa-building-columns method-icon-bank"></i> NB</td>
+                <td>21 Jul, 08:10 AM</td>
+                <td><span class="badge badge-success">Verified</span></td>
+              </tr>
+              <tr>
+                <td>RCP20260720-007</td>
+                <td>Thoko Chips</td>
+                <td>Form 4</td>
+                <td>MWK 80,000</td>
+                <td><i class="fa-solid fa-mobile-screen-button method-icon-airtel"></i> Airtel</td>
+                <td>20 Jul, 04:55 PM</td>
+                <td><span class="badge badge-pending">Pending</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card dashboard-card">
+          <div class="dashboard-card-header">
+            <h3>Outstanding Balances</h3>
+            <a href="#" class="btn btn-sm btn-outline">View All</a>
+          </div>
+          <div class="outstanding-list">
+            <div class="outstanding-item">
+              <div class="outstanding-avatar">JK</div>
+              <div class="outstanding-info">
+                <strong>John Katengeza</strong>
+                <small>Form 3 — Owes MWK 60,000</small>
+              </div>
+              <span class="badge badge-failed">Overdue</span>
+            </div>
+            <div class="outstanding-item">
+              <div class="outstanding-avatar">TM</div>
+              <div class="outstanding-info">
+                <strong>Tiwanike Mvula</strong>
+                <small>Form 2 — Owes MWK 95,000</small>
+              </div>
+              <span class="badge badge-failed">Overdue</span>
+            </div>
+            <div class="outstanding-item">
+              <div class="outstanding-avatar">CN</div>
+              <div class="outstanding-info">
+                <strong>Chisomo Nkhwazi</strong>
+                <small>Form 1 — Owes MWK 30,000</small>
+              </div>
+              <span class="badge badge-pending">Partial</span>
+            </div>
+            <div class="outstanding-item">
+              <div class="outstanding-avatar">AF</div>
+              <div class="outstanding-info">
+                <strong>Annifer Phiri</strong>
+                <small>Form 4 — Owes MWK 120,000</small>
+              </div>
+              <span class="badge badge-failed">Overdue</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card dashboard-card">
+          <div class="dashboard-card-header">
+            <h3>Daily Collections This Week</h3>
+          </div>
+          <div class="chart-bars">
+            <div class="chart-bar-item">
+              <div class="chart-bar-wrap">
+                <div class="chart-bar" style="height: 60%"></div>
+              </div>
+              <span>Mon</span>
+            </div>
+            <div class="chart-bar-item">
+              <div class="chart-bar-wrap">
+                <div class="chart-bar" style="height: 85%"></div>
+              </div>
+              <span>Tue</span>
+            </div>
+            <div class="chart-bar-item">
+              <div class="chart-bar-wrap">
+                <div class="chart-bar" style="height: 45%"></div>
+              </div>
+              <span>Wed</span>
+            </div>
+            <div class="chart-bar-item">
+              <div class="chart-bar-wrap">
+                <div class="chart-bar" style="height: 95%"></div>
+              </div>
+              <span>Thu</span>
+            </div>
+            <div class="chart-bar-item">
+              <div class="chart-bar-wrap">
+                <div class="chart-bar" style="height: 70%"></div>
+              </div>
+              <span>Fri</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

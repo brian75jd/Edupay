@@ -13,7 +13,7 @@
 
   <nav class="navbar">
     <div class="container">
-      <a href="{% static '../templates/home.html' %}" class="nav-brand">
+      <a href="/" class="nav-brand">
         <img src="{% static 'images/logo.png' %}" alt="Edupay" class="nav-brand-img">
         <div class="nav-brand-text">
           <span>EduPay <strong>Malawi</strong></span>
@@ -26,7 +26,7 @@
         <span></span>
       </button>
       <div class="nav-links" id="navLinks">
-        <a href="{% static '../templates/home.html' %}">Home</a>
+        <a href="/">Home</a>
         <a href="#">Schools</a>
         <a href="#">Payments</a>
         <a href="#">Accounts</a>
@@ -38,14 +38,14 @@
     <div class="container">
 
       <div class="page-header">
-        <a href="{% static '../templates/home.html' %}" class="page-header-back">
+        <a href="/" class="page-header-back">
           <i class="fa-solid fa-arrow-left"></i>
         </a>
         <h1>Pay School Fees</h1>
       </div>
 
       <div class="breadcrumb">
-        <a href="{% static '../templates/home.html' %}">Home</a>
+        <a href="/">Home</a>
         <span>/</span>
         <span>Pay School Fees</span>
       </div>
@@ -72,17 +72,36 @@
         </div>
       </div>
 
-      <div class="form-section">
+      <!-- Step Indicator -->
+      <div class="step-indicator" id="stepIndicator">
+        <div class="step-item active" data-step="1">
+          <div class="step-circle">1</div>
+          <span class="step-label">Student Details</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item" data-step="2">
+          <div class="step-circle">2</div>
+          <span class="step-label">Verify Account</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item" data-step="3">
+          <div class="step-circle">3</div>
+          <span class="step-label">Confirm & Pay</span>
+        </div>
+      </div>
+
+      <!-- Step 1: Student Details -->
+      <div class="form-section step-panel" id="step1Panel">
         <h3 class="form-section-title">Student Information</h3>
 
         <div class="form-group">
           <label class="form-label">Student Full Name</label>
-          <input type="text" class="form-input" placeholder="Enter full name">
+          <input type="text" class="form-input" id="studentName" placeholder="Enter full name">
         </div>
 
         <div class="form-group">
           <label class="form-label">Level of Study</label>
-          <select class="form-select">
+          <select class="form-select" id="studentLevel">
             <option value="" disabled selected>Select level</option>
             <option value="form_1">Form 1</option>
             <option value="form_2">Form 2</option>
@@ -95,7 +114,128 @@
           </select>
         </div>
 
-        <button type="button" class="btn btn-primary btn-block">Make Payment</button>
+        <div class="step-error" id="step1Error"></div>
+
+        <button type="button" class="btn btn-primary btn-block" id="step1Next">Continue</button>
+      </div>
+
+      <!-- Step 2: Parent Authentication -->
+      <div class="step-panel step-panel-hidden" id="step2Panel">
+
+        <div class="auth-step" id="stepPhone">
+          <div class="auth-step-card">
+            <div class="auth-step-header">
+              <i class="fa-solid fa-user-lock"></i>
+              <h3>Parent Authentication</h3>
+            </div>
+            <p class="auth-step-desc">Enter your phone number to continue</p>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <div class="auth-phone-group">
+                <span class="auth-phone-prefix">+265</span>
+                <input type="tel" class="form-input auth-phone-input" id="parentPhone" placeholder="Enter phone number" maxlength="9">
+              </div>
+            </div>
+            <div class="form-error" id="phoneError"></div>
+            <button type="button" class="btn btn-primary btn-block" id="parentAuthContinue">Continue</button>
+          </div>
+        </div>
+
+        <div class="auth-step auth-step-hidden" id="stepSignup">
+          <div class="auth-step-card">
+            <div class="auth-step-header">
+              <i class="fa-solid fa-user-plus"></i>
+              <h3>Create Account</h3>
+            </div>
+            <p class="auth-step-desc">Phone: <strong id="signupPhoneDisplay">+265 888 123 456</strong></p>
+            <p class="auth-step-info">You're new here. Create a password to set up your account.</p>
+            <div class="form-group">
+              <label class="form-label">Create Password</label>
+              <div class="auth-password-group">
+                <input type="password" class="form-input" id="parentSignupPass" placeholder="Create a password">
+                <button type="button" class="password-toggle" data-target="parentSignupPass">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm Password</label>
+              <div class="auth-password-group">
+                <input type="password" class="form-input" id="parentSignupConfirm" placeholder="Confirm password">
+                <button type="button" class="password-toggle" data-target="parentSignupConfirm">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
+            <div class="form-error" id="signupStepError"></div>
+            <div class="auth-step-actions">
+              <button type="button" class="btn btn-outline btn-sm" id="parentSignupBack">Back</button>
+              <button type="button" class="btn btn-primary btn-sm" id="parentSignupBtn">Create Account</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-step auth-step-hidden" id="stepLogin">
+          <div class="auth-step-card">
+            <div class="auth-step-header">
+              <i class="fa-solid fa-arrow-right-to-bracket"></i>
+              <h3>Welcome Back</h3>
+            </div>
+            <p class="auth-step-desc">Phone: <strong id="loginPhoneDisplay">+265 888 123 456</strong></p>
+            <p class="auth-step-info">Enter your password to continue.</p>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <div class="auth-password-group">
+                <input type="password" class="form-input" id="parentLoginPass" placeholder="Enter password">
+                <button type="button" class="password-toggle" data-target="parentLoginPass">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
+            <div class="form-error" id="loginStepError"></div>
+            <div class="auth-step-actions">
+              <button type="button" class="btn btn-outline btn-sm" id="parentLoginBack">Back</button>
+              <button type="button" class="btn btn-primary btn-sm" id="parentLoginBtn">Login</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-authenticated auth-step-hidden" id="stepAuthenticated">
+          <i class="fa-solid fa-circle-check"></i>
+          <div>
+            <strong>Authenticated</strong>
+            <span>Phone: <span class="auth-phone" id="authenticatedPhone">+265 888 123 456</span></span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Step 3: Confirm & Pay -->
+      <div class="step-panel step-panel-hidden" id="step3Panel">
+        <div class="card confirmation-card">
+          <div class="confirmation-row">
+            <span class="confirmation-label">School</span>
+            <span class="confirmation-value" id="confirmSchool">Maranatha Academy</span>
+          </div>
+          <div class="confirmation-row">
+            <span class="confirmation-label">Student</span>
+            <span class="confirmation-value" id="confirmStudent">—</span>
+          </div>
+          <div class="confirmation-row">
+            <span class="confirmation-label">Level</span>
+            <span class="confirmation-value" id="confirmLevel">—</span>
+          </div>
+          <div class="confirmation-row">
+            <span class="confirmation-label">Parent Phone</span>
+            <span class="confirmation-value" id="confirmPhone">—</span>
+          </div>
+          <div class="confirmation-row confirmation-total">
+            <span class="confirmation-label">Total</span>
+            <span class="confirmation-value highlight" id="confirmTotal">MWK 120,000.00</span>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-block" id="makePaymentBtn">Make Payment</button>
       </div>
 
     </div>
