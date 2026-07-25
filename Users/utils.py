@@ -35,7 +35,7 @@ def ParentCreationView(validated_data:dict):
 
     user = ParentUsers.objects.create(
         phone_number = phone,
-        pin_code = make_password(pin)
+        hashed_password = make_password(pin)
     )
 
     return True

@@ -8,7 +8,7 @@ class HasSessionKey(BasePermission):
          _session_key = request.session.get('session_key')
 
          if not _session_key:
-            return None
+            return False
 
          return True
         

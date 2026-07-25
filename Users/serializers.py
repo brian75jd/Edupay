@@ -10,7 +10,7 @@ class Response200Serializer(serializers.Serializer):
 
 class ParentCreationSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=15)
-    pin_code = serializers.CharField(min_length = 3)
+    pin_code = serializers.CharField(max_length = 30)
 
 
     def validate_phone_number(self,value):
@@ -25,11 +25,3 @@ class ParentCreationSerializer(serializers.Serializer):
         value = validated.get('phone')
         return value
 
-
-    def validate_pin_code(self, value):
-        if len(value) < 3:
-            raise serializers.ValidationError(
-                'PIN can not have less than 3 characters'
-            )
-
-        raise value

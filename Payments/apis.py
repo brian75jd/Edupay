@@ -42,7 +42,7 @@ class InitiatePayment(APIView):
 
             serializer.is_valid(raise_exception=True)
             checkout = PaychanguInitiatePayment.initiate_payment(
-                validated_data=serializer.validated_data
+                validated_data=serializer.validated_data,request=request
             )
 
             if checkout.get('success'):
@@ -73,13 +73,14 @@ class Payment_Webhook(APIView):
             raise PayChanguWebhookException()
         try:
             data = request.data
+            print('data',data)
 
             tx_ref = data.get('tx_ref')
             resp_status = data.get('status')
 
             try:
                 transaction = Transaction.objects.get(
-                        trans_ref = tx_ref
+                        id = tx_ref
                     )
             except Transaction.DoesNotExist:
                 return Response({'success':False},status=404)
@@ -89,8 +90,10 @@ class Payment_Webhook(APIView):
                 transaction.save(update_fields=['status'])
                 return Response(status=200)
 
-            transaction.status = 'Failed'
+            transaction.status = 'success'
             transaction.save(update_fields=['status'])
+
+            return Response(status=200)
 
         except Exception as exp:
             logger.exption('ERROR: ')
