@@ -1,17 +1,27 @@
 $(document).ready(function () {
 
-  // Seed mock staff account if none exist
-  if (!localStorage.getItem('staffAccounts')) {
-    var staffAccounts = {
-      "999999999": {
-        password: "head123",
-        role: "headteacher",
-        firstName: "John",
-        lastName: "Banda"
-      }
-    };
-    localStorage.setItem('staffAccounts', JSON.stringify(staffAccounts));
-  }
+  // Seed demo accounts — merge into existing to always keep demo credentials
+  var staffAccounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
+  var demoAccounts = {
+    "999999999": {
+      password: "head123",
+      role: "headteacher",
+      firstName: "John",
+      lastName: "Banda",
+      email: "john.banda@edupay.mw"
+    },
+    "888888888": {
+      password: "acc123",
+      role: "accountant",
+      firstName: "Grace",
+      lastName: "Mhango",
+      email: "grace.mhango@edupay.mw"
+    }
+  };
+  Object.keys(demoAccounts).forEach(function (key) {
+    if (!staffAccounts[key]) staffAccounts[key] = demoAccounts[key];
+  });
+  localStorage.setItem('staffAccounts', JSON.stringify(staffAccounts));
 
   // Sidebar toggle
   $('#sidebarToggle').on('click', function () {
@@ -292,7 +302,8 @@ $(document).ready(function () {
       phone: phone,
       role: account.role,
       firstName: account.firstName,
-      lastName: account.lastName
+      lastName: account.lastName,
+      email: account.email || ''
     }));
 
     // Redirect based on role
