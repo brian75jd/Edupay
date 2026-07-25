@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pay School Fees - Edupay</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="{% static '../templates/home.html' %}" class="nav-brand">
+        <i class="fa-solid fa-book nav-brand-icon"></i>
+        <div class="nav-brand-text">
+          <span>EduPay <strong>Malawi</strong></span>
+          <small>Pay Fast, Pay Smart</small>
+        </div>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <div class="nav-links" id="navLinks">
+        <a href="{% static '../templates/home.html' %}">Home</a>
+        <a href="#">Schools</a>
+        <a href="#">Payments</a>
+        <a href="#">Accounts</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="page-section">
+    <div class="container">
+
+      <div class="page-header">
+        <a href="{% static '../templates/home.html' %}" class="page-header-back">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1>Pay School Fees</h1>
+      </div>
+
+      <div class="breadcrumb">
+        <a href="{% static '../templates/home.html' %}">Home</a>
+        <span>/</span>
+        <span>Pay School Fees</span>
+      </div>
+
+      <div class="school-detail-card">
+        <div class="school-detail-logo">
+          <img id="schoolLogo" src="https://via.placeholder.com/60/1a3a6b/ffffff?text=SA" alt="School Logo">
+        </div>
+        <div class="school-detail-info">
+          <h2 id="schoolName">Maranatha Academy</h2>
+          <p><i class="fa-solid fa-location-dot"></i> <span id="schoolLocation">Blantyre</span></p>
+          <p><i class="fa-solid fa-graduation-cap"></i> <span id="schoolType">Secondary School</span></p>
+        </div>
+      </div>
+
+      <div class="fees-summary-card">
+        <div class="fees-row">
+          <span class="fees-label">Total Fees</span>
+          <span class="fees-value highlight" id="totalFees">MWK 120,000.00</span>
+        </div>
+        <div class="fees-row">
+          <span class="fees-label">Fees Balance</span>
+          <span class="fees-value highlight" id="feesBalance">MWK 120,000.00</span>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="form-section-title">Student Information</h3>
+
+        <div class="form-group">
+          <label class="form-label">Student Full Name</label>
+          <input type="text" class="form-input" placeholder="Enter full name">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Level of Study</label>
+          <select class="form-select">
+            <option value="" disabled selected>Select level</option>
+            <option value="form_1">Form 1</option>
+            <option value="form_2">Form 2</option>
+            <option value="form_3">Form 3</option>
+            <option value="form_4">Form 4</option>
+            <option value="year_1">Year 1</option>
+            <option value="year_2">Year 2</option>
+            <option value="year_3">Year 3</option>
+            <option value="year_4">Year 4</option>
+          </select>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-block">Make Payment</button>
+      </div>
+
+    </div>
+  </section>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
