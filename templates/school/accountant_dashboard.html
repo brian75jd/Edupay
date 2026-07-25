@@ -13,6 +13,9 @@
 
   <nav class="navbar">
     <div class="container">
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <i class="fa-solid fa-bars"></i>
+      </button>
       <a href="/" class="nav-brand">
         <img src="{% static 'images/logo.png' %}" alt="Edupay" class="nav-brand-img">
         <div class="nav-brand-text">
@@ -35,6 +38,25 @@
       </div>
     </div>
   </nav>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="{% static 'images/logo.png' %}" alt="Edupay">
+      <span>EduPay <strong>Malawi</strong></span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/school/accountant/" class="sidebar-item active">
+        <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
+      </a>
+      <a href="#" class="sidebar-item">
+        <i class="fa-solid fa-school"></i> <span>My School</span>
+      </a>
+      <a href="#" class="sidebar-item">
+        <i class="fa-solid fa-credit-card"></i> <span>Transactions</span>
+      </a>
+    </nav>
+  </div>
 
   <section class="dashboard-section">
     <div class="container">

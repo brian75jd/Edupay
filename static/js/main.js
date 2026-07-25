@@ -1,5 +1,19 @@
 $(document).ready(function () {
 
+  // Sidebar toggle
+  $('#sidebarToggle').on('click', function () {
+    $('#sidebar, #sidebarOverlay').addClass('open');
+    $('body').addClass('sidebar-open');
+  });
+  $('#sidebarOverlay').on('click', function () {
+    $('#sidebar, #sidebarOverlay').removeClass('open');
+    $('body').removeClass('sidebar-open');
+  });
+  $('.sidebar-item').on('click', function () {
+    $('#sidebar, #sidebarOverlay').removeClass('open');
+    $('body').removeClass('sidebar-open');
+  });
+
   // Mobile nav toggle
   $('#navToggle').on('click', function () {
     $('#navLinks').toggleClass('open');
