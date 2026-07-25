@@ -79,9 +79,10 @@ ul {
   gap: 10px;
 }
 
-.nav-brand-icon {
-  font-size: 1.6rem;
-  color: var(--primary);
+.nav-brand-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
 }
 
 .nav-brand-text {
@@ -623,9 +624,10 @@ ul {
   margin-bottom: 28px;
 }
 
-.auth-logo i {
-  font-size: 1.8rem;
-  color: var(--primary);
+.auth-logo-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
 }
 
 .auth-logo-text {
