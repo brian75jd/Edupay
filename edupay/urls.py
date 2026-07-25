@@ -1,6 +1,14 @@
 from django.contrib import admin
 from django.urls import path, include
-from Payments.views import home_view, pay_fees_view
+from Payments.views import (
+    home_view,
+    pay_fees_view,
+    headteacher_dashboard_view,
+    accountant_dashboard_view,
+    create_school_view,
+    add_accountant_view,
+    change_password_view,
+)
 from Users.views import login_view, signup_view
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -14,6 +22,11 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('signup/', signup_view, name='signup'),
     path('pay-fees/', pay_fees_view, name='pay_fees'),
+    path('school/create/', create_school_view, name='create_school'),
+    path('school/headteacher/', headteacher_dashboard_view, name='headteacher_dashboard'),
+    path('school/accountant/', accountant_dashboard_view, name='accountant_dashboard'),
+    path('school/add-accountant/', add_accountant_view, name='add_accountant'),
+    path('school/change-password/', change_password_view, name='change_password'),
     path('admin/', admin.site.urls),
     path('api/payment/', include('Payments.urls')),
 
