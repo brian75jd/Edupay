@@ -1,0 +1,9 @@
+[2026-07-25 17:21:36,102] INFO django.utils.autoreload - Watching for file changes with StatReloader
+[2026-07-25 17:24:01,809] INFO django.utils.autoreload - C:\Users\Ephraim\Desktop\Edupay\edupay\urls.py changed, reloading.
+[2026-07-25 17:24:02,721] INFO django.utils.autoreload - Watching for file changes with StatReloader
+[2026-07-25 17:24:11,042] INFO django.utils.autoreload - C:\Users\Ephraim\Desktop\Edupay\edupay\urls.py changed, reloading.
+[2026-07-25 17:24:11,929] INFO django.utils.autoreload - Watching for file changes with StatReloader
+[2026-07-25 17:24:31,114] INFO django.utils.autoreload - C:\Users\Ephraim\Desktop\Edupay\edupay\urls.py changed, reloading.
+[2026-07-25 17:24:32,798] INFO django.utils.autoreload - Watching for file changes with StatReloader
+[2026-07-25 17:26:16,133] INFO django.utils.autoreload - Watching for file changes with StatReloader
+[2026-07-25 17:31:12,329] WARNING django.request - Not Found: /.well-known/appspecific/com.chrome.devtools.json

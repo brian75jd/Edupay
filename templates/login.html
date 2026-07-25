@@ -14,17 +14,13 @@
   <div class="auth-page">
     <div class="auth-card">
 
-      <div class="auth-logo">
-        <img src="{% static 'images/logo.png' %}" alt="Edupay" class="auth-logo-img">
-        <div class="auth-logo-text">
-          <span>EduPay <strong>Malawi</strong></span>
-          <small>Pay Fast, Pay Smart</small>
-        </div>
+      <div class="auth-logo-big">
+        <img src="{% static 'images/logo.png' %}" alt="Edupay">
       </div>
 
-      <div class="auth-header">
-        <h2>Welcome Back</h2>
-        <p>Login to your account</p>
+      <div class="info-banner info-banner-warning">
+        <i class="fa-solid fa-shield-halved"></i>
+        <div>This login is for <strong>school staff</strong> only. Parents use the <strong>Pay Fees</strong> button on the home page.</div>
       </div>
 
       <form class="auth-form" id="loginForm" novalidate>
@@ -52,7 +48,7 @@
       </form>
 
       <div class="auth-footer">
-        <p>Don't have an account? <a href="/signup/">Sign Up</a></p>
+        <p>Don't have an account? <a href="/signup/">Register</a></p>
       </div>
 
     </div>
