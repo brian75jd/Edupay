@@ -9,14 +9,16 @@ class PaymentUserCredentials(serializers.Serializer):
     )
 
     amount = serializers.IntegerField()
+    school_id = serializers.IntegerField()
 
 
     def validate_amount(self, value):
-        if type(value) != 'int':
+        try:
+            value = int(value)
+        except ValueError:
             raise serializers.ValidationError(
                 'Amount must be an interger'
             )
-
         if value < 1000:
             raise serializers.ValidationError(
                 'Amount must be greater that MKW1000 '
