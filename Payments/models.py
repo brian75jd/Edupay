@@ -1,6 +1,6 @@
 from django.db import models
 import uuid
-
+from schools.models import School
 
 
 class Transaction(models.Model):
@@ -15,8 +15,16 @@ class Transaction(models.Model):
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     trans_fee = models.DecimalField(decimal_places=2, max_digits=15)
     status = models.CharField(max_length=30, choices=STATUS)
+    school = models.ForeignKey(School, on_delete=models.CASCADE,
+                               related_name = 'school_transactions',null=True,blank=True)
     paid_for = models.CharField(max_length=300, null=True,blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
 
 
+
+class Receipt(models.Model):
+    id = models.UUIDField(primary_key=True,editable=False,default=uuid.uuid4)
+    transanction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add = True)
+    
 

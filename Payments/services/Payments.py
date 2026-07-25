@@ -1,6 +1,6 @@
 import requests
 from django.conf import settings
-import uuid
+from schools.models import School
 from django.db import transaction as db_transansaction
 from .Exceptions import (PaymentCredentialException, 
                          SchoolNotFoundException,
@@ -32,6 +32,15 @@ class PaychanguInitiatePayment:
             if not all([amount,student_first_name, student_last_name]):
                 raise PaymentCredentialException('Amount, student first and last names are required')
 
+            try:
+                school = School.objects.get(id=school_id)
+
+            except School.DoesNotExist:
+                raise SchoolNotFoundException('School does not exist')
+
+            if not school.status.lower() =="approved":
+                raise SchoolExceptionError('School is not approve to receive payments')
+
             with db_transansaction.atomic():            
                 calculate_total = calculate_total_amount(amount = amount)
                 trans_fee = calculate_total[1]
@@ -41,7 +50,9 @@ class PaychanguInitiatePayment:
                     status = 'pending',
                     trans_fee = trans_fee,
                     amount = total_amount,
-                    trans_ref = secrets.token_hex(8)
+                    trans_ref = secrets.token_hex(8),
+                    school = school,
+                    paid_for = f"{student_first_name} {student_last_name}"
                 )
                   
                 tx_ref = str(transaction.id)

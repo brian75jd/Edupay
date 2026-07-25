@@ -11,8 +11,16 @@ from Payments.serializers import (
     View404ResponseSerializer,
     PaymentUserCredentials
 )
-
+from Payments.models import Transaction
 from Payments.services.Payments import PaychanguInitiatePayment
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import AllowAny
+from Payments.services.utils import verify_signature
+from Payments.services.Exceptions import PayChanguWebhookException
+
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -49,3 +57,42 @@ class InitiatePayment(APIView):
         except Exception:
             logger.exception('ERROR: ')
             raise
+
+
+
+
+@method_decorator(csrf_exempt,name='dispatch')
+class Payment_Webhook(APIView):
+    permission_classes = [AllowAny]
+
+    @staticmethod
+    def post(request, *args, **kwargs):
+
+        if not verify_signature(request=request):
+            raise PayChanguWebhookException()
+        try:
+            data = request.data
+
+            tx_ref = data.get('tx_ref')
+            resp_status = data.get('status')
+
+            try:
+                transaction = Transaction.objects.get(
+                        trans_ref = tx_ref
+                    )
+            except Transaction.DoesNotExist:
+                return Response({'success':False},status=404)
+
+            if resp_status != "success":
+                transaction.status = 'failed'
+                transaction.save(update_fields=['status'])
+                return Response(status=200)
+
+            transaction.status = 'Failed'
+            transaction.save(update_fields=['status'])
+
+        except Exception as exp:
+            logger.exption('ERROR: ')
+            raise
+
+          
