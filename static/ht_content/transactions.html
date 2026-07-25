@@ -1,0 +1,24 @@
+<script>
+(function() {
+  function render(filter) {
+    var txns = JSON.parse(localStorage.getItem('transactions') || '[]');
+    if (filter) {
+      var from = $('#ht-txn-from').val();
+      var to = $('#ht-txn-to').val();
+      if (from) txns = txns.filter(function(t) { return t.date >= from; });
+      if (to) txns = txns.filter(function(t) { return t.date <= to; });
+    }
+    $('#ht-txn-table').html(txns.reverse().map(function(t) {
+      return '<tr><td>' + t.id + '</td><td>' + t.student + '</td><td>' + t.level + '</td><td>' + fmtMoney(t.amount) + '</td><td>' + methodIcon(t.method) + '</td><td>' + fmtDate(t.date) + '</td><td>' + statusBadge(t.status) + '</td></tr>';
+    }).join(''));
+  }
+
+  render();
+  $('#ht-txn-from, #ht-txn-to').val('');
+  $('#ht-txn-apply').off('click').on('click', function() { render(true); });
+  $('#ht-txn-reset').off('click').on('click', function() {
+    $('#ht-txn-from, #ht-txn-to').val('');
+    render(false);
+  });
+})();
+</script>
