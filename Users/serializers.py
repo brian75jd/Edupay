@@ -3,6 +3,11 @@ from rest_framework import serializers
 from .utils import validate_phone
 
 
+class Response200Serializer(serializers.Serializer):
+    success = serializers.BooleanField()
+    message = serializers.CharField()
+
+
 class ParentCreationSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=15)
     pin_code = serializers.CharField(min_length = 3)
@@ -17,7 +22,9 @@ class ParentCreationSerializer(serializers.Serializer):
                 f"{error}"
             )
 
+        value = validated.get('phone')
         return value
+
 
     def validate_pin_code(self, value):
         if len(value) < 3:
