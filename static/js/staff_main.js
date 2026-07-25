@@ -124,6 +124,25 @@ $(document).ready(function () {
     $('.modal-overlay, .modal').removeClass('open');
   });
 
+  // ── School Modal Save ─────────────────────────────
+  $(document).on('click', '#schoolModalSaveBtn', function () {
+    var name = $('#schoolModalName').val().trim();
+    var location = $('#schoolModalLocation').val().trim();
+    var type = $('#schoolModalType').val();
+    if (!name || !location || !type) {
+      $('#schoolModalError').text('Please fill in all fields');
+      return;
+    }
+    $('#schoolModalError').text('');
+    localStorage.setItem('schoolInfo', JSON.stringify({ name: name, location: location, type: type }));
+    $('#schoolModal, #schoolModalOverlay').removeClass('open');
+    if (typeof window.refreshHtSchool === 'function') {
+      window.refreshHtSchool();
+    } else {
+      location.reload();
+    }
+  });
+
   // ── Accountant Modal Save (headteacher only) ──────
   if ($('#accModalSaveBtn').length) {
     var editingAccPhone = null;
