@@ -8,6 +8,7 @@
   <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/staff_dashboard.css' %}">
 </head>
 <body>
 
@@ -37,7 +38,10 @@
 
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
   <div class="sidebar" id="sidebar">
-    <nav class="sidebar-nav" style="padding-top:76px;">
+    <div class="sidebar-header">
+      <img src="{% static 'images/logo.png' %}" alt="Edupay" class="sidebar-logo">
+    </div>
+    <nav class="sidebar-nav">
       <a href="#" class="sidebar-item active" data-tab="dashboard">
         <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
       </a>
@@ -181,6 +185,7 @@
         <div class="dashboard-header">
           <div><h1>Students</h1><p>Students who have paid fees</p></div>
           <button class="btn btn-primary btn-sm" id="ac-stu-export"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+          <button class="btn btn-sm btn-outline" id="ac-stu-export-excel"><i class="fa-solid fa-file-excel"></i> Excel</button>
         </div>
         <div class="filter-bar">
           <div class="filter-group">
@@ -200,7 +205,7 @@
         </div>
         <div class="card dashboard-card">
           <div class="table-wrapper">
-            <table>
+            <table id="ac-stu-data-table">
               <thead><tr><th>Student Name</th><th>Level</th><th>Phone</th><th>Amount Paid</th><th>Date</th><th>Term</th></tr></thead>
               <tbody id="ac-stu-table"></tbody>
             </table>
