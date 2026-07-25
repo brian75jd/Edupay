@@ -42,6 +42,10 @@ class InitiatePayment(APIView):
                     'checkout_url': checkout.get('checkout_url')
                 })
 
+            return Response({
+                'detail':checkout.get('detail')
+            })
+
         except Exception:
             logger.exception('ERROR: ')
             raise
