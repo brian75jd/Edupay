@@ -1,0 +1,29 @@
+<script>
+(function() {
+  function render(filter) {
+    var students = JSON.parse(localStorage.getItem('students') || '[]');
+    if (filter) {
+      var from = $('#ht-stu-from').val();
+      var to = $('#ht-stu-to').val();
+      var term = $('#ht-stu-term').val();
+      if (from) students = students.filter(function(s) { return s.date >= from; });
+      if (to) students = students.filter(function(s) { return s.date <= to; });
+      if (term && term !== 'all') students = students.filter(function(s) { return s.term === term; });
+    }
+    $('#ht-stu-table').html(students.map(function(s) {
+      return '<tr><td>' + s.name + '</td><td>' + s.level + '</td><td>+265 ' + s.phone + '</td><td>' + fmtMoney(s.amount) + '</td><td>' + fmtDate(s.date) + '</td><td>' + s.term + '</td></tr>';
+    }).join(''));
+  }
+
+  render();
+  $('#ht-stu-from, #ht-stu-to').val('');
+  $('#ht-stu-term').val('all');
+  $('#ht-stu-apply').off('click').on('click', function() { render(true); });
+  $('#ht-stu-reset').off('click').on('click', function() {
+    $('#ht-stu-from, #ht-stu-to').val('');
+    $('#ht-stu-term').val('all');
+    render(false);
+  });
+  $('#ht-stu-export').off('click').on('click', function() { window.print(); });
+})();
+</script>
