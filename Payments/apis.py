@@ -18,7 +18,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import AllowAny
 from Payments.services.utils import verify_signature
 from Payments.services.Exceptions import PayChanguWebhookException
-
+from Payments.permissions import HasSessionKey
 
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 )
 class InitiatePayment(APIView):
     authentication_classes = []
+    permission_classes = [HasSessionKey]
 
     @staticmethod
     def post(request, *args, **kwargs):
