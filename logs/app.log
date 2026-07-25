@@ -46,3 +46,4 @@ Payments.services.Exceptions.RequestTimeoutException: {"status":"failed","data":
 [2026-07-25 14:56:39,181] INFO django.utils.autoreload - C:\Users\LENOVO\edupay\Payments\services\Payments.py changed, reloading.
 [2026-07-25 14:56:44,628] INFO django.utils.autoreload - Watching for file changes with StatReloader
 [2026-07-25 14:57:20,883] WARNING django.request - Method Not Allowed: /api/payment/v1/initiate_payment/
+[2026-07-25 16:28:31,438] INFO django.utils.autoreload - Watching for file changes with StatReloader
