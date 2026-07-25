@@ -1,0 +1,49 @@
+<script>
+(function() {
+  var user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+  $('#ac-prof-firstname').val(user.firstName || '');
+  $('#ac-prof-lastname').val(user.lastName || '');
+  $('#ac-prof-email').val(user.email || '');
+  $('#ac-prof-phone').val(user.phone || '');
+
+  $('#ac-prof-save-btn').off('click').on('click', function() {
+    var fn = $('#ac-prof-firstname').val().trim();
+    var ln = $('#ac-prof-lastname').val().trim();
+    var em = $('#ac-prof-email').val().trim();
+    var ph = $('#ac-prof-phone').val().trim();
+    if (!fn || !ln || !em || !ph || ph.length < 9) {
+      $('#ac-prof-error').text('Please fill in all fields correctly');
+      return;
+    }
+    $('#ac-prof-error').text('');
+    user.firstName = fn; user.lastName = ln; user.email = em; user.phone = ph;
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    var accounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
+    if (accounts[user.phone]) {
+      accounts[user.phone].firstName = fn; accounts[user.phone].lastName = ln; accounts[user.phone].email = em;
+      localStorage.setItem('staffAccounts', JSON.stringify(accounts));
+    }
+    alert('Profile updated!');
+  });
+
+  $('#ac-prof-change-pass-btn').off('click').on('click', function() {
+    var cur = $('#ac-prof-cur-pass').val();
+    var np = $('#ac-prof-new-pass').val();
+    var cp = $('#ac-prof-confirm-pass').val();
+    if (!cur) { $('#ac-prof-pass-error').text('Please enter current password'); return; }
+    if (!np || np.length < 6) { $('#ac-prof-pass-error').text('New password must be at least 6 characters'); return; }
+    if (np !== cp) { $('#ac-prof-pass-error').text('Passwords do not match'); return; }
+    $('#ac-prof-pass-error').text('');
+    var accounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
+    if (accounts[user.phone]) {
+      if (accounts[user.phone].password !== cur) { $('#ac-prof-pass-error').text('Current password is incorrect'); return; }
+      accounts[user.phone].password = np;
+      accounts[user.phone].mustChangePassword = false;
+      localStorage.setItem('staffAccounts', JSON.stringify(accounts));
+      alert('Password changed!');
+      $('#ac-prof-cur-pass, #ac-prof-new-pass, #ac-prof-confirm-pass').val('');
+    }
+  });
+})();
+</script>

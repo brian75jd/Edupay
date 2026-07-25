@@ -1,0 +1,27 @@
+<script>
+(function() {
+  function render() {
+    var accounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
+    var html = '';
+    Object.keys(accounts).forEach(function(phone) {
+      if (accounts[phone].role !== 'accountant') return;
+      var a = accounts[phone];
+      var status = a.mustChangePassword ? 'Pending' : 'Active';
+      html += '<tr>' +
+        '<td>' + a.firstName + ' ' + a.lastName + '</td>' +
+        '<td>' + (a.email || '—') + '</td>' +
+        '<td>+265 ' + phone + '</td>' +
+        '<td>' + statusBadge(status) + '</td>' +
+        '<td>' +
+          '<button class="btn btn-sm btn-outline acc-edit-btn" data-phone="' + phone + '" style="margin-right:6px;"><i class="fa-solid fa-pen"></i></button>' +
+          '<button class="btn btn-sm btn-outline acc-delete-btn" data-phone="' + phone + '" data-name="' + a.firstName + ' ' + a.lastName + '"><i class="fa-solid fa-trash"></i></button>' +
+        '</td>' +
+      '</tr>';
+    });
+    $('#ht-acc-table').html(html);
+  }
+
+  render();
+  window.refreshHtAccountants = render;
+})();
+</script>

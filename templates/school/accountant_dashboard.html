@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>School Accountant Dashboard - Edupay</title>
+  <title>Accountant Dashboard - Edupay</title>
   <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
@@ -30,30 +30,25 @@
       </button>
       <div class="nav-links" id="navLinks">
         <a href="/">Home</a>
-        <a href="/school/accountant/" class="active">Dashboard</a>
-        <a href="#">Transactions</a>
-        <a href="#">Students</a>
-        <a href="#">Reports</a>
-        <a href="#">Account</a>
+        <a href="#" id="logoutLink">Logout</a>
       </div>
     </div>
   </nav>
 
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
   <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <img src="{% static 'images/logo.png' %}" alt="Edupay">
-      <span>EduPay <strong>Malawi</strong></span>
-    </div>
-    <nav class="sidebar-nav">
-      <a href="/school/accountant/" class="sidebar-item active">
+    <nav class="sidebar-nav" style="padding-top:76px;">
+      <a href="#" class="sidebar-item active" data-tab="dashboard">
         <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
       </a>
-      <a href="#" class="sidebar-item">
-        <i class="fa-solid fa-school"></i> <span>My School</span>
-      </a>
-      <a href="#" class="sidebar-item">
+      <a href="#" class="sidebar-item" data-tab="transactions">
         <i class="fa-solid fa-credit-card"></i> <span>Transactions</span>
+      </a>
+      <a href="#" class="sidebar-item" data-tab="students">
+        <i class="fa-solid fa-user-graduate"></i> <span>Students</span>
+      </a>
+      <a href="#" class="sidebar-item" data-tab="profile">
+        <i class="fa-solid fa-user"></i> <span>Profile</span>
       </a>
     </nav>
   </div>
@@ -61,231 +56,213 @@
   <section class="dashboard-section">
     <div class="container">
 
-      <div class="dashboard-header">
-        <div>
-          <h1>Accountant Dashboard</h1>
-          <p>Welcome back, Mrs. Msowoya</p>
-        </div>
-        <div class="dashboard-school-badge">
-          <img src="{% static 'images/logo.png' %}" alt="School" class="dashboard-school-logo">
+      <!-- ═══ Panel: Dashboard ═══ -->
+      <div id="panel-dashboard" class="dashboard-panel">
+        <div class="dashboard-header">
           <div>
-            <strong>Maranatha Academy</strong>
-            <small>Blantyre</small>
+            <h1>Dashboard</h1>
+            <p>Welcome back, <span id="ac-dash-welcome">—</span></p>
+          </div>
+          <div class="dashboard-school-badge">
+            <img src="{% static 'images/logo.png' %}" alt="School" class="dashboard-school-logo">
+            <div>
+              <strong id="ac-dash-sname">—</strong>
+              <small id="ac-dash-sloc">—</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="card stat-card stat-card-primary">
+            <div class="stat-card-icon"><i class="fa-solid fa-coins"></i></div>
+            <div class="stat-card-info">
+              <span class="stat-label">Today's Collections</span>
+              <span class="stat-value" id="ac-dash-today">MWK 0</span>
+            </div>
+          </div>
+          <div class="card stat-card stat-card-success">
+            <div class="stat-card-icon"><i class="fa-solid fa-receipt"></i></div>
+            <div class="stat-card-info">
+              <span class="stat-label">Transactions Today</span>
+              <span class="stat-value" id="ac-dash-txn-count">0</span>
+            </div>
+          </div>
+          <div class="card stat-card stat-card-warning">
+            <div class="stat-card-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+            <div class="stat-card-info">
+              <span class="stat-label">Pending Verification</span>
+              <span class="stat-value" id="ac-dash-pending">0</span>
+            </div>
+          </div>
+          <div class="card stat-card stat-card-danger">
+            <div class="stat-card-icon"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="stat-card-info">
+              <span class="stat-label">Monthly Total</span>
+              <span class="stat-value" id="ac-dash-monthly">MWK 0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card dashboard-card">
+            <div class="dashboard-card-header"><h3>Outstanding Balances</h3></div>
+            <div id="ac-dash-outstanding" class="outstanding-list"></div>
+          </div>
+
+          <div class="card dashboard-card">
+            <div class="dashboard-card-header"><h3>Daily Collections This Week</h3></div>
+            <div class="chart-bars" id="ac-dash-chart">
+              <div class="chart-bar-item">
+                <div class="chart-bar-wrap"><div class="chart-bar" style="height:0%"></div></div>
+                <span>Mon</span>
+              </div>
+              <div class="chart-bar-item">
+                <div class="chart-bar-wrap"><div class="chart-bar" style="height:0%"></div></div>
+                <span>Tue</span>
+              </div>
+              <div class="chart-bar-item">
+                <div class="chart-bar-wrap"><div class="chart-bar" style="height:0%"></div></div>
+                <span>Wed</span>
+              </div>
+              <div class="chart-bar-item">
+                <div class="chart-bar-wrap"><div class="chart-bar" style="height:0%"></div></div>
+                <span>Thu</span>
+              </div>
+              <div class="chart-bar-item">
+                <div class="chart-bar-wrap"><div class="chart-bar" style="height:0%"></div></div>
+                <span>Fri</span>
+              </div>
+              <div class="chart-bar-item">
+                <div class="chart-bar-wrap"><div class="chart-bar" style="height:0%"></div></div>
+                <span>Sat</span>
+              </div>
+              <div class="chart-bar-item">
+                <div class="chart-bar-wrap"><div class="chart-bar" style="height:0%"></div></div>
+                <span>Sun</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="stat-grid">
-        <div class="card stat-card stat-card-primary">
-          <div class="stat-card-icon">
-            <i class="fa-solid fa-coins"></i>
-          </div>
-          <div class="stat-card-info">
-            <span class="stat-label">Today's Collections</span>
-            <span class="stat-value">MWK 840,000</span>
-          </div>
+      <!-- ═══ Panel: Transactions ═══ -->
+      <div id="panel-transactions" class="dashboard-panel">
+        <div class="dashboard-header">
+          <div><h1>Transactions</h1><p>All fee payments processed</p></div>
         </div>
-        <div class="card stat-card stat-card-success">
-          <div class="stat-card-icon">
-            <i class="fa-solid fa-receipt"></i>
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label class="filter-label">From</label>
+            <input type="date" class="form-input filter-input" id="ac-txn-from">
           </div>
-          <div class="stat-card-info">
-            <span class="stat-label">Transactions Today</span>
-            <span class="stat-value">7</span>
+          <div class="filter-group">
+            <label class="filter-label">To</label>
+            <input type="date" class="form-input filter-input" id="ac-txn-to">
           </div>
+          <div class="filter-group">
+            <label class="filter-label">Method</label>
+            <select class="form-select filter-input" id="ac-txn-method"><option value="all">All Methods</option><option>Airtel Money</option><option>TNM Mpamba</option><option>National Bank</option></select>
+          </div>
+          <button class="btn btn-sm btn-primary" id="ac-txn-apply"><i class="fa-solid fa-filter"></i> Filter</button>
+          <button class="btn btn-sm btn-outline" id="ac-txn-reset">Reset</button>
         </div>
-        <div class="card stat-card stat-card-warning">
-          <div class="stat-card-icon">
-            <i class="fa-solid fa-hourglass-half"></i>
-          </div>
-          <div class="stat-card-info">
-            <span class="stat-label">Pending Verification</span>
-            <span class="stat-value">3</span>
-          </div>
-        </div>
-        <div class="card stat-card stat-card-danger">
-          <div class="stat-card-icon">
-            <i class="fa-solid fa-chart-line"></i>
-          </div>
-          <div class="stat-card-info">
-            <span class="stat-label">Monthly Total</span>
-            <span class="stat-value">MWK 4,850,000</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card dashboard-card">
-        <div class="dashboard-card-header">
-          <h3>Recent Transactions</h3>
-          <div class="dashboard-card-actions">
-            <select class="form-select dashboard-filter">
-              <option>All Methods</option>
-              <option>Airtel Money</option>
-              <option>TNM Mpamba</option>
-              <option>National Bank</option>
-            </select>
-            <a href="#" class="btn btn-sm btn-outline">Export CSV</a>
-          </div>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Receipt #</th>
-                <th>Student</th>
-                <th>Level</th>
-                <th>Amount</th>
-                <th>Method</th>
-                <th>Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>RCP20260723-001</td>
-                <td>Chifundo Banda</td>
-                <td>Form 3</td>
-                <td>MWK 120,000</td>
-                <td><i class="fa-solid fa-mobile-screen-button method-icon-airtel"></i> Airtel</td>
-                <td>23 Jul, 09:41 AM</td>
-                <td><span class="badge badge-success">Verified</span></td>
-              </tr>
-              <tr>
-                <td>RCP20260723-002</td>
-                <td>Grace Mlenga</td>
-                <td>Form 1</td>
-                <td>MWK 60,000</td>
-                <td><i class="fa-solid fa-mobile-screen-button method-icon-tnm"></i> TNM</td>
-                <td>23 Jul, 10:15 AM</td>
-                <td><span class="badge badge-success">Verified</span></td>
-              </tr>
-              <tr>
-                <td>RCP20260723-003</td>
-                <td>James Phiri</td>
-                <td>Form 4</td>
-                <td>MWK 120,000</td>
-                <td><i class="fa-solid fa-building-columns method-icon-bank"></i> NB</td>
-                <td>22 Jul, 02:30 PM</td>
-                <td><span class="badge badge-success">Verified</span></td>
-              </tr>
-              <tr>
-                <td>RCP20260722-004</td>
-                <td>Mary Kamwendo</td>
-                <td>Form 2</td>
-                <td>MWK 45,000</td>
-                <td><i class="fa-solid fa-mobile-screen-button method-icon-airtel"></i> Airtel</td>
-                <td>22 Jul, 11:20 AM</td>
-                <td><span class="badge badge-pending">Pending</span></td>
-              </tr>
-              <tr>
-                <td>RCP20260721-005</td>
-                <td>Peter Gondwe</td>
-                <td>Form 3</td>
-                <td>MWK 120,000</td>
-                <td><i class="fa-solid fa-mobile-screen-button method-icon-tnm"></i> TNM</td>
-                <td>21 Jul, 03:45 PM</td>
-                <td><span class="badge badge-success">Verified</span></td>
-              </tr>
-              <tr>
-                <td>RCP20260721-006</td>
-                <td>Linda Mwale</td>
-                <td>Form 1</td>
-                <td>MWK 120,000</td>
-                <td><i class="fa-solid fa-building-columns method-icon-bank"></i> NB</td>
-                <td>21 Jul, 08:10 AM</td>
-                <td><span class="badge badge-success">Verified</span></td>
-              </tr>
-              <tr>
-                <td>RCP20260720-007</td>
-                <td>Thoko Chips</td>
-                <td>Form 4</td>
-                <td>MWK 80,000</td>
-                <td><i class="fa-solid fa-mobile-screen-button method-icon-airtel"></i> Airtel</td>
-                <td>20 Jul, 04:55 PM</td>
-                <td><span class="badge badge-pending">Pending</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="dashboard-grid">
         <div class="card dashboard-card">
-          <div class="dashboard-card-header">
-            <h3>Outstanding Balances</h3>
-            <a href="#" class="btn btn-sm btn-outline">View All</a>
-          </div>
-          <div class="outstanding-list">
-            <div class="outstanding-item">
-              <div class="outstanding-avatar">JK</div>
-              <div class="outstanding-info">
-                <strong>John Katengeza</strong>
-                <small>Form 3 — Owes MWK 60,000</small>
-              </div>
-              <span class="badge badge-failed">Overdue</span>
-            </div>
-            <div class="outstanding-item">
-              <div class="outstanding-avatar">TM</div>
-              <div class="outstanding-info">
-                <strong>Tiwanike Mvula</strong>
-                <small>Form 2 — Owes MWK 95,000</small>
-              </div>
-              <span class="badge badge-failed">Overdue</span>
-            </div>
-            <div class="outstanding-item">
-              <div class="outstanding-avatar">CN</div>
-              <div class="outstanding-info">
-                <strong>Chisomo Nkhwazi</strong>
-                <small>Form 1 — Owes MWK 30,000</small>
-              </div>
-              <span class="badge badge-pending">Partial</span>
-            </div>
-            <div class="outstanding-item">
-              <div class="outstanding-avatar">AF</div>
-              <div class="outstanding-info">
-                <strong>Annifer Phiri</strong>
-                <small>Form 4 — Owes MWK 120,000</small>
-              </div>
-              <span class="badge badge-failed">Overdue</span>
-            </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Receipt #</th><th>Student</th><th>Level</th><th>Amount</th><th>Method</th><th>Date</th><th>Status</th></tr></thead>
+              <tbody id="ac-txn-table"></tbody>
+            </table>
           </div>
         </div>
+      </div>
 
-        <div class="card dashboard-card">
-          <div class="dashboard-card-header">
-            <h3>Daily Collections This Week</h3>
+      <!-- ═══ Panel: Students ═══ -->
+      <div id="panel-students" class="dashboard-panel">
+        <div class="dashboard-header">
+          <div><h1>Students</h1><p>Students who have paid fees</p></div>
+          <button class="btn btn-primary btn-sm" id="ac-stu-export"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+        </div>
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label class="filter-label">From</label>
+            <input type="date" class="form-input filter-input" id="ac-stu-from">
           </div>
-          <div class="chart-bars">
-            <div class="chart-bar-item">
-              <div class="chart-bar-wrap">
-                <div class="chart-bar" style="height: 60%"></div>
-              </div>
-              <span>Mon</span>
+          <div class="filter-group">
+            <label class="filter-label">To</label>
+            <input type="date" class="form-input filter-input" id="ac-stu-to">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Term</label>
+            <select class="form-select filter-input" id="ac-stu-term"><option value="all">All Terms</option><option>Term 1</option><option>Term 2</option><option>Term 3</option></select>
+          </div>
+          <button class="btn btn-sm btn-primary" id="ac-stu-apply"><i class="fa-solid fa-filter"></i> Filter</button>
+          <button class="btn btn-sm btn-outline" id="ac-stu-reset">Reset</button>
+        </div>
+        <div class="card dashboard-card">
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Student Name</th><th>Level</th><th>Phone</th><th>Amount Paid</th><th>Date</th><th>Term</th></tr></thead>
+              <tbody id="ac-stu-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Panel: Profile ═══ -->
+      <div id="panel-profile" class="dashboard-panel">
+        <div class="dashboard-header">
+          <div><h1>My Profile</h1><p>Manage your personal information</p></div>
+        </div>
+        <div class="dashboard-grid">
+          <div class="card dashboard-card">
+            <div class="dashboard-card-header"><h3>Personal Information</h3></div>
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input type="text" class="form-input" id="ac-prof-firstname" placeholder="Enter first name">
             </div>
-            <div class="chart-bar-item">
-              <div class="chart-bar-wrap">
-                <div class="chart-bar" style="height: 85%"></div>
-              </div>
-              <span>Tue</span>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input type="text" class="form-input" id="ac-prof-lastname" placeholder="Enter last name">
             </div>
-            <div class="chart-bar-item">
-              <div class="chart-bar-wrap">
-                <div class="chart-bar" style="height: 45%"></div>
-              </div>
-              <span>Wed</span>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" id="ac-prof-email" placeholder="Enter email">
             </div>
-            <div class="chart-bar-item">
-              <div class="chart-bar-wrap">
-                <div class="chart-bar" style="height: 95%"></div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <div class="auth-phone-group">
+                <span class="auth-phone-prefix">+265</span>
+                <input type="tel" class="form-input auth-phone-input" id="ac-prof-phone" placeholder="Enter phone" maxlength="9">
               </div>
-              <span>Thu</span>
             </div>
-            <div class="chart-bar-item">
-              <div class="chart-bar-wrap">
-                <div class="chart-bar" style="height: 70%"></div>
+            <div class="form-error" id="ac-prof-error"></div>
+            <button class="btn btn-primary" id="ac-prof-save-btn">Save Changes</button>
+          </div>
+          <div class="card dashboard-card">
+            <div class="dashboard-card-header"><h3>Change Password</h3></div>
+            <div class="form-group">
+              <label class="form-label">Current Password</label>
+              <div class="auth-password-group">
+                <input type="password" class="form-input" id="ac-prof-cur-pass" placeholder="Enter current password">
+                <button type="button" class="password-toggle" data-target="ac-prof-cur-pass"><i class="fa-solid fa-eye"></i></button>
               </div>
-              <span>Fri</span>
             </div>
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <div class="auth-password-group">
+                <input type="password" class="form-input" id="ac-prof-new-pass" placeholder="Enter new password">
+                <button type="button" class="password-toggle" data-target="ac-prof-new-pass"><i class="fa-solid fa-eye"></i></button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <div class="auth-password-group">
+                <input type="password" class="form-input" id="ac-prof-confirm-pass" placeholder="Confirm new password">
+                <button type="button" class="password-toggle" data-target="ac-prof-confirm-pass"><i class="fa-solid fa-eye"></i></button>
+              </div>
+            </div>
+            <div class="form-error" id="ac-prof-pass-error"></div>
+            <button class="btn btn-primary" id="ac-prof-change-pass-btn">Change Password</button>
           </div>
         </div>
       </div>
@@ -295,5 +272,6 @@
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="{% static 'js/main.js' %}"></script>
+  <script src="{% static 'js/staff_main.js' %}"></script>
 </body>
 </html>

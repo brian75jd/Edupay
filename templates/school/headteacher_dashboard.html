@@ -23,36 +23,34 @@
           <small>Pay Fast, Pay Smart</small>
         </div>
       </a>
-      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
-        <span></span>
-        <span></span>
-        <span></span>
       </button>
-      <div class="nav-links" id="navLinks">
-        <a href="/">Home</a>
-        <a href="/school/headteacher/" class="active">Dashboard</a>
-        <a href="#">Students</a>
-        <a href="#">Reports</a>
-        <a href="#">Account</a>
-      </div>
     </div>
   </nav>
 
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <img src="{% static 'images/logo.png' %}" alt="Edupay">
-      <span>EduPay <strong>Malawi</strong></span>
+      <img src="{% static 'images/logo.png' %}" alt="Edupay" class="sidebar-logo">
+
     </div>
     <nav class="sidebar-nav">
-      <a href="/school/headteacher/" class="sidebar-item active">
+      <a href="#" class="sidebar-item active" data-tab="dashboard">
         <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
       </a>
-      <a href="#" class="sidebar-item">
+      <a href="#" class="sidebar-item" data-tab="school">
         <i class="fa-solid fa-school"></i> <span>My School</span>
       </a>
-      <a href="#" class="sidebar-item">
+      <a href="#" class="sidebar-item" data-tab="accountants">
+        <i class="fa-solid fa-users-gear"></i> <span>Accountants</span>
+      </a>
+      <a href="#" class="sidebar-item" data-tab="transactions">
         <i class="fa-solid fa-credit-card"></i> <span>Transactions</span>
+      </a>
+      <a href="#" class="sidebar-item" data-tab="students">
+        <i class="fa-solid fa-user-graduate"></i> <span>Students</span>
+      </a>
+      <a href="#" class="sidebar-item" data-tab="profile">
+        <i class="fa-solid fa-user"></i> <span>Profile</span>
       </a>
     </nav>
   </div>
@@ -60,235 +58,294 @@
   <section class="dashboard-section">
     <div class="container">
 
-      <div class="dashboard-header">
-        <div>
-          <h1>Headteacher Dashboard</h1>
-          <p>Welcome back, Mr. Mwale</p>
-        </div>
-        <div class="dashboard-school-badge">
-          <img src="{% static 'images/logo.png' %}" alt="School" class="dashboard-school-logo">
+      <!-- ═══ Panel: Dashboard ═══ -->
+      <div id="panel-dashboard" class="dashboard-panel">
+        <div class="dashboard-header">
           <div>
-            <strong>Maranatha Academy</strong>
-            <small>Blantyre</small>
+            <h1>Dashboard</h1>
+            <p>Welcome back, <span id="ht-dash-welcome">—</span></p>
+          </div>
+          <div class="dashboard-school-badge">
+            <img src="{% static 'images/logo.png' %}" alt="School" class="dashboard-school-logo">
+            <div>
+              <strong id="ht-dash-sname">—</strong>
+              <small id="ht-dash-sloc">—</small>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="stat-grid">
-        <div class="card stat-card stat-card-primary">
-          <div class="stat-card-icon">
-            <i class="fa-solid fa-money-bill-wave"></i>
+        <div class="stat-grid">
+          <div class="card stat-card stat-card-primary">
+            <div class="stat-card-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+            <div class="stat-card-info">
+              <span class="stat-label">Total Revenue</span>
+              <span class="stat-value" id="ht-dash-revenue">MWK 0</span>
+            </div>
           </div>
-          <div class="stat-card-info">
-            <span class="stat-label">Total Revenue</span>
-            <span class="stat-value">MWK 4,850,000</span>
+          <div class="card stat-card stat-card-success">
+            <div class="stat-card-icon"><i class="fa-solid fa-check-circle"></i></div>
+            <div class="stat-card-info">
+              <span class="stat-label">Paid Students</span>
+              <span class="stat-value" id="ht-dash-paid">0</span>
+            </div>
           </div>
-        </div>
-        <div class="card stat-card stat-card-success">
-          <div class="stat-card-icon">
-            <i class="fa-solid fa-check-circle"></i>
+          <div class="card stat-card stat-card-warning">
+            <div class="stat-card-icon"><i class="fa-solid fa-clock"></i></div>
+            <div class="stat-card-info">
+              <span class="stat-label">Pending</span>
+              <span class="stat-value" id="ht-dash-pending">0</span>
+            </div>
           </div>
-          <div class="stat-card-info">
-            <span class="stat-label">Paid Students</span>
-            <span class="stat-value">312</span>
-          </div>
-        </div>
-        <div class="card stat-card stat-card-warning">
-          <div class="stat-card-icon">
-            <i class="fa-solid fa-clock"></i>
-          </div>
-          <div class="stat-card-info">
-            <span class="stat-label">Pending</span>
-            <span class="stat-value">88</span>
-          </div>
-        </div>
-        <div class="card stat-card stat-card-danger">
-          <div class="stat-card-icon">
-            <i class="fa-solid fa-users"></i>
-          </div>
-          <div class="stat-card-info">
-            <span class="stat-label">Total Students</span>
-            <span class="stat-value">400</span>
+          <div class="card stat-card stat-card-danger">
+            <div class="stat-card-icon"><i class="fa-solid fa-users"></i></div>
+            <div class="stat-card-info">
+              <span class="stat-label">Total Students</span>
+              <span class="stat-value" id="ht-dash-total">0</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="dashboard-grid">
         <div class="card dashboard-card">
-          <div class="dashboard-card-header">
-            <h3>Recent Payments</h3>
-            <a href="#" class="btn btn-sm btn-outline">View All</a>
-          </div>
+          <div class="dashboard-card-header"><h3>Recent Payments</h3></div>
           <div class="table-wrapper">
             <table>
-              <thead>
-                <tr>
-                  <th>Student</th>
-                  <th>Amount</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Chifundo Banda</td>
-                  <td>MWK 120,000</td>
-                  <td>23 Jul 2026</td>
-                  <td><span class="badge badge-success">Paid</span></td>
-                </tr>
-                <tr>
-                  <td>Grace Mlenga</td>
-                  <td>MWK 60,000</td>
-                  <td>23 Jul 2026</td>
-                  <td><span class="badge badge-success">Paid</span></td>
-                </tr>
-                <tr>
-                  <td>James Phiri</td>
-                  <td>MWK 120,000</td>
-                  <td>22 Jul 2026</td>
-                  <td><span class="badge badge-success">Paid</span></td>
-                </tr>
-                <tr>
-                  <td>Mary Kamwendo</td>
-                  <td>MWK 45,000</td>
-                  <td>22 Jul 2026</td>
-                  <td><span class="badge badge-pending">Partial</span></td>
-                </tr>
-                <tr>
-                  <td>Peter Gondwe</td>
-                  <td>MWK 120,000</td>
-                  <td>21 Jul 2026</td>
-                  <td><span class="badge badge-success">Paid</span></td>
-                </tr>
-              </tbody>
+              <thead><tr><th>Student</th><th>Level</th><th>Amount</th><th>Date</th><th>Method</th><th>Status</th></tr></thead>
+              <tbody id="ht-dash-recent-txns"></tbody>
             </table>
           </div>
         </div>
+      </div>
 
+      <!-- ═══ Panel: My School ═══ -->
+      <div id="panel-school" class="dashboard-panel">
+        <div class="dashboard-header">
+          <div><h1>My School</h1><p>View and update your school information</p></div>
+        </div>
         <div class="card dashboard-card">
           <div class="dashboard-card-header">
-            <h3>Fee Collection by Level</h3>
+            <h3>School Information</h3>
+            <button class="btn btn-sm btn-outline" id="ht-school-edit-btn"><i class="fa-solid fa-pen"></i> Edit</button>
           </div>
-          <div class="collection-list">
-            <div class="collection-item">
-              <div class="collection-item-info">
-                <span class="collection-label">Form 1</span>
-                <span class="collection-sub">100 students</span>
-              </div>
-              <div class="collection-bar-wrap">
-                <div class="collection-bar" style="width: 78%"></div>
-              </div>
-              <span class="collection-percent">78%</span>
+          <div id="ht-school-display">
+            <div class="profile-card">
+              <div class="profile-field"><span class="profile-label">School Name</span><span class="profile-value" id="ht-school-name">—</span></div>
+              <div class="profile-field"><span class="profile-label">Location</span><span class="profile-value" id="ht-school-location">—</span></div>
+              <div class="profile-field"><span class="profile-label">Type</span><span class="profile-value" id="ht-school-type">—</span></div>
             </div>
-            <div class="collection-item">
-              <div class="collection-item-info">
-                <span class="collection-label">Form 2</span>
-                <span class="collection-sub">95 students</span>
-              </div>
-              <div class="collection-bar-wrap">
-                <div class="collection-bar" style="width: 85%"></div>
-              </div>
-              <span class="collection-percent">85%</span>
+          </div>
+          <div id="ht-school-edit-form" style="display:none;">
+            <div class="form-group">
+              <label class="form-label">School Name</label>
+              <input type="text" class="form-input" id="ht-school-edit-name" placeholder="Enter school name">
             </div>
-            <div class="collection-item">
-              <div class="collection-item-info">
-                <span class="collection-label">Form 3</span>
-                <span class="collection-sub">110 students</span>
-              </div>
-              <div class="collection-bar-wrap">
-                <div class="collection-bar" style="width: 62%"></div>
-              </div>
-              <span class="collection-percent">62%</span>
+            <div class="form-group">
+              <label class="form-label">Location</label>
+              <input type="text" class="form-input" id="ht-school-edit-location" placeholder="Enter location">
             </div>
-            <div class="collection-item">
-              <div class="collection-item-info">
-                <span class="collection-label">Form 4</span>
-                <span class="collection-sub">95 students</span>
-              </div>
-              <div class="collection-bar-wrap">
-                <div class="collection-bar" style="width: 91%"></div>
-              </div>
-              <span class="collection-percent">91%</span>
+            <div class="form-group">
+              <label class="form-label">Type</label>
+              <select class="form-select" id="ht-school-edit-type"><option value="">Select type</option><option>Primary School</option><option>Secondary School</option><option>University</option><option>College</option></select>
+            </div>
+            <div class="form-error" id="ht-school-error"></div>
+            <div class="modal-actions">
+              <button class="btn btn-outline" id="ht-school-cancel-btn">Cancel</button>
+              <button class="btn btn-primary" id="ht-school-save-btn">Save Changes</button>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="card dashboard-card">
-        <div class="dashboard-card-header">
-          <h3>Payment Methods Breakdown</h3>
+      <!-- ═══ Panel: Accountants ═══ -->
+      <div id="panel-accountants" class="dashboard-panel">
+        <div class="dashboard-header">
+          <div><h1>Accountants</h1><p>Manage school accountants</p></div>
+          <button class="btn btn-primary btn-sm" id="addAccountantBtn"><i class="fa-solid fa-plus"></i> Add Accountant</button>
         </div>
-        <div class="methods-grid">
-          <div class="method-stat">
-            <div class="method-stat-icon method-airtel">
-              <i class="fa-solid fa-mobile-screen-button"></i>
-            </div>
-            <div class="method-stat-info">
-              <strong>Airtel Money</strong>
-              <span>MWK 2,100,000</span>
-            </div>
-            <span class="method-stat-percent">43%</span>
-          </div>
-          <div class="method-stat">
-            <div class="method-stat-icon method-tnm">
-              <i class="fa-solid fa-mobile-screen-button"></i>
-            </div>
-            <div class="method-stat-info">
-              <strong>TNM Mpamba</strong>
-              <span>MWK 1,450,000</span>
-            </div>
-            <span class="method-stat-percent">30%</span>
-          </div>
-          <div class="method-stat">
-            <div class="method-stat-icon method-bank">
-              <i class="fa-solid fa-building-columns"></i>
-            </div>
-            <div class="method-stat-info">
-              <strong>National Bank</strong>
-              <span>MWK 1,300,000</span>
-            </div>
-            <span class="method-stat-percent">27%</span>
+        <div class="card dashboard-card">
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="ht-acc-table"></tbody>
+            </table>
           </div>
         </div>
       </div>
 
-      <div class="card dashboard-card">
-        <div class="dashboard-card-header">
-          <h3>Accountant Management</h3>
-          <a href="/school/add-accountant/" class="btn btn-sm btn-primary">Add Accountant</a>
+      <!-- ═══ Panel: Transactions ═══ -->
+      <div id="panel-transactions" class="dashboard-panel">
+        <div class="dashboard-header">
+          <div><h1>Transactions</h1><p>All fee payments made to your school</p></div>
         </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Grace Msowoya</td>
-                <td>grace@maranatha.edu</td>
-                <td>+265 999 123 456</td>
-                <td><span class="badge badge-success">Active</span></td>
-              </tr>
-              <tr>
-                <td>John Banda</td>
-                <td>john@maranatha.edu</td>
-                <td>+265 888 654 321</td>
-                <td><span class="badge badge-pending">Pending</span></td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label class="filter-label">From</label>
+            <input type="date" class="form-input filter-input" id="ht-txn-from">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">To</label>
+            <input type="date" class="form-input filter-input" id="ht-txn-to">
+          </div>
+          <button class="btn btn-sm btn-primary" id="ht-txn-apply"><i class="fa-solid fa-filter"></i> Filter</button>
+          <button class="btn btn-sm btn-outline" id="ht-txn-reset">Reset</button>
+        </div>
+        <div class="card dashboard-card">
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Receipt #</th><th>Student</th><th>Level</th><th>Amount</th><th>Method</th><th>Date</th><th>Status</th></tr></thead>
+              <tbody id="ht-txn-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Panel: Students ═══ -->
+      <div id="panel-students" class="dashboard-panel">
+        <div class="dashboard-header">
+          <div><h1>Students</h1><p>Students who have paid fees on this platform</p></div>
+          <button class="btn btn-primary btn-sm" id="ht-stu-export"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+        </div>
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label class="filter-label">From</label>
+            <input type="date" class="form-input filter-input" id="ht-stu-from">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">To</label>
+            <input type="date" class="form-input filter-input" id="ht-stu-to">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Term</label>
+            <select class="form-select filter-input" id="ht-stu-term"><option value="all">All Terms</option><option>Term 1</option><option>Term 2</option><option>Term 3</option></select>
+          </div>
+          <button class="btn btn-sm btn-primary" id="ht-stu-apply"><i class="fa-solid fa-filter"></i> Filter</button>
+          <button class="btn btn-sm btn-outline" id="ht-stu-reset">Reset</button>
+        </div>
+        <div class="card dashboard-card">
+          <div class="table-wrapper">
+            <table id="ht-stu-data-table">
+              <thead><tr><th>Student Name</th><th>Level</th><th>Phone</th><th>Amount Paid</th><th>Date</th><th>Term</th></tr></thead>
+              <tbody id="ht-stu-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Panel: Profile ═══ -->
+      <div id="panel-profile" class="dashboard-panel">
+        <div class="dashboard-header">
+          <div><h1>My Profile</h1><p>Manage your personal information</p></div>
+        </div>
+        <div class="dashboard-grid">
+          <div class="card dashboard-card">
+            <div class="dashboard-card-header"><h3>Personal Information</h3></div>
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input type="text" class="form-input" id="ht-prof-firstname" placeholder="Enter first name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input type="text" class="form-input" id="ht-prof-lastname" placeholder="Enter last name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" id="ht-prof-email" placeholder="Enter email">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <div class="auth-phone-group">
+                <span class="auth-phone-prefix">+265</span>
+                <input type="tel" class="form-input auth-phone-input" id="ht-prof-phone" placeholder="Enter phone" maxlength="9">
+              </div>
+            </div>
+            <div class="form-error" id="ht-prof-error"></div>
+            <button class="btn btn-primary" id="ht-prof-save-btn">Save Changes</button>
+          </div>
+          <div class="card dashboard-card">
+            <div class="dashboard-card-header"><h3>Change Password</h3></div>
+            <div class="form-group">
+              <label class="form-label">Current Password</label>
+              <div class="auth-password-group">
+                <input type="password" class="form-input" id="ht-prof-cur-pass" placeholder="Enter current password">
+                <button type="button" class="password-toggle" data-target="ht-prof-cur-pass"><i class="fa-solid fa-eye"></i></button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <div class="auth-password-group">
+                <input type="password" class="form-input" id="ht-prof-new-pass" placeholder="Enter new password">
+                <button type="button" class="password-toggle" data-target="ht-prof-new-pass"><i class="fa-solid fa-eye"></i></button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <div class="auth-password-group">
+                <input type="password" class="form-input" id="ht-prof-confirm-pass" placeholder="Confirm new password">
+                <button type="button" class="password-toggle" data-target="ht-prof-confirm-pass"><i class="fa-solid fa-eye"></i></button>
+              </div>
+            </div>
+            <div class="form-error" id="ht-prof-pass-error"></div>
+            <button class="btn btn-primary" id="ht-prof-change-pass-btn">Change Password</button>
+          </div>
         </div>
       </div>
 
     </div>
   </section>
 
+  <!-- Accountant Form Modal -->
+  <div class="modal-overlay" id="accountantModalOverlay"></div>
+  <div class="modal" id="accountantModal">
+    <div class="modal-header">
+      <h3 id="accountantModalTitle">Add Accountant</h3>
+      <button class="modal-close modal-close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">First Name</label>
+        <input type="text" class="form-input" id="accModalFirstName" placeholder="Enter first name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Last Name</label>
+        <input type="text" class="form-input" id="accModalLastName" placeholder="Enter last name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="accModalEmail" placeholder="Enter email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone</label>
+        <div class="auth-phone-group">
+          <span class="auth-phone-prefix">+265</span>
+          <input type="tel" class="form-input auth-phone-input" id="accModalPhone" placeholder="Enter phone" maxlength="9">
+        </div>
+      </div>
+      <div class="form-error" id="accModalError"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline modal-close-btn">Cancel</button>
+      <button class="btn btn-primary" id="accModalSaveBtn">Save</button>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="confirmModalOverlay"></div>
+  <div class="modal" id="confirmModal">
+    <div class="modal-header">
+      <h3>Confirm Delete</h3>
+      <button class="modal-close modal-close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to delete <strong id="confirmDeleteName">—</strong>?</p>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:8px;">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline modal-close-btn">Cancel</button>
+      <button class="btn btn-primary" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="{% static 'js/main.js' %}"></script>
+  <script src="{% static 'js/staff_main.js' %}"></script>
 </body>
 </html>
