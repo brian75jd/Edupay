@@ -12,7 +12,8 @@
 </head>
 <body>
 
-  <nav class="navbar">
+  <!-- ═══ Red Navbar ═══ -->
+  <nav class="navbar-red">
     <div class="container">
       <a href="/" class="nav-brand">
         <img src="{% static 'images/logo.png' %}" alt="Edupay" class="nav-brand-img">
@@ -21,83 +22,19 @@
           <small>Pay Fast, Pay Smart</small>
         </div>
       </a>
-      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
-        <span></span>
-        <span></span>
-        <span></span>
+      <button class="nav-toggle-red" id="navToggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
       </button>
-      <div class="nav-links" id="navLinks">
-        <a href="#" data-tab="dashboard" class="nav-link">Home</a>
-        <a href="#" data-tab="schools" class="nav-link">Schools</a>
-        <a href="#" data-tab="pay-fees" class="nav-link">Pay Fees</a>
-        <a href="#" data-tab="history" class="nav-link">History</a>
-        <a href="/school/login/" style="color:var(--primary);font-weight:600;"><i class="fa-solid fa-user-shield"></i> Staff</a>
+      <div class="nav-links-red" id="navLinks">
+        <a href="/school/login/"><i class="fa-solid fa-user-shield"></i> Staff</a>
         <a href="#" id="parentLoginBtn"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
         <a href="#" id="parentLogoutLink" style="display:none;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
       </div>
     </div>
   </nav>
 
-  <!-- ═══ Panel: Dashboard/Home ═══ -->
-  <div id="panel-dashboard" class="dashboard-panel">
-    <section class="hero-home">
-      <div class="hero-home-overlay"></div>
-      <div class="container hero-home-content">
-        <h1>Pay Fast, <em>Smart</em><br>& Anywhere</h1>
-        <p>Select your school and view school fees. Pay using all kinds of method you want</p>
-      </div>
-    </section>
-    <div class="container" id="parent-dash-content"></div>
-  </div>
-
-  <!-- ═══ Panel: Schools ═══ -->
-  <div id="panel-schools" class="dashboard-panel">
-    <section class="schools-section" style="padding-top:24px;">
-      <div class="container">
-        <div class="schools-header">
-          <div class="schools-header-text">
-            <div class="schools-header-title">
-              <i class="fa-solid fa-building-columns"></i>
-              <h2>Schools</h2>
-            </div>
-            <p>Select your school to pay fees</p>
-          </div>
-        </div>
-        <div class="search-bar">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" id="schoolSearch" placeholder="Search school...">
-        </div>
-        <div class="school-list" id="schoolList"></div>
-      </div>
-    </section>
-  </div>
-
-  <!-- ═══ Panel: Pay Fees ═══ -->
-  <div id="panel-pay-fees" class="dashboard-panel">
-    <section style="padding:24px 0;">
-      <div class="container">
-        <div id="pay-fees-content"></div>
-      </div>
-    </section>
-  </div>
-
-  <!-- ═══ Panel: History ═══ -->
-  <div id="panel-history" class="dashboard-panel">
-    <section style="padding:24px 0;">
-      <div class="container">
-        <div class="schools-header" style="margin-bottom:16px;">
-          <div class="schools-header-text">
-            <div class="schools-header-title">
-              <i class="fa-solid fa-clock-rotate-left"></i>
-              <h2>Payment History</h2>
-            </div>
-            <p>Your past fee payments</p>
-          </div>
-        </div>
-        <div id="history-content"></div>
-      </div>
-    </section>
-  </div>
+  <!-- ═══ App Content ═══ -->
+  <div id="app-content"></div>
 
   <!-- ═══ Login Modal ═══ -->
   <div class="modal-overlay" id="parentLoginOverlay"></div>
@@ -176,22 +113,6 @@
       <span style="font-size:0.82rem;color:var(--text-muted);">Already have an account? <a href="#" id="parentLoginFromSignup" style="color:var(--primary);font-weight:600;">Login</a></span>
       <button class="btn btn-primary" id="parentSignupSaveBtn">Create Account</button>
     </div>
-  </div>
-
-  <!-- ═══ Bottom Nav ═══ -->
-  <div class="bottom-nav">
-    <a class="bottom-nav-item active" href="#dashboard" data-tab="dashboard">
-      <i class="fa-solid fa-house"></i><span>Home</span>
-    </a>
-    <a class="bottom-nav-item" href="#schools" data-tab="schools">
-      <i class="fa-solid fa-building-columns"></i><span>Schools</span>
-    </a>
-    <a class="bottom-nav-item" href="#pay-fees" data-tab="pay-fees">
-      <i class="fa-solid fa-credit-card"></i><span>Pay</span>
-    </a>
-    <a class="bottom-nav-item" href="#history" data-tab="history">
-      <i class="fa-solid fa-clock-rotate-left"></i><span>History</span>
-    </a>
   </div>
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
