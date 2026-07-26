@@ -4,13 +4,17 @@ certifi==2026.7.22
 charset-normalizer==3.4.9
 Django==5.2.16
 djangorestframework==3.17.1
+dotenv==0.9.9
 drf-spectacular==0.30.0
+gunicorn==26.0.0
 idna==3.18
 inflection==0.5.1
 jsonschema==4.26.0
 jsonschema-specifications==2025.9.1
+packaging==26.2
 phonenumbers==9.0.34
 pillow==12.3.0
+python-dotenv==1.2.2
 PyYAML==6.0.3
 referencing==0.37.0
 reportlab==5.0.0
