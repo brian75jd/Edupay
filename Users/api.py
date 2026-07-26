@@ -170,3 +170,35 @@ class StaffLoginView(APIView):
         role = 'headteacher' if School.objects.filter(user=user).exists() else 'accountant'
 
         return Response({'success': True, 'role': role})
+
+
+class StaffMeView(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({'detail': 'Not authenticated'}, status=401)
+
+        school = School.objects.filter(user=request.user).first()
+        data = {
+            'id': request.user.id,
+            'phone': request.user.phone_number,
+            'firstName': request.user.first_name,
+            'lastName': request.user.last_name,
+            'email': request.user.email,
+            'role': 'headteacher' if school else 'accountant',
+            'school': None,
+        }
+        if school:
+            logo_url = None
+            try:
+                if school.logo:
+                    logo_url = request.build_absolute_uri(school.logo.url)
+            except Exception:
+                pass
+            data['school'] = {
+                'id': school.id,
+                'name': school.name,
+                'location': school.location,
+                'logo': logo_url,
+                'fee_amount': str(school.fee_amount),
+            }
+        return Response(data)
