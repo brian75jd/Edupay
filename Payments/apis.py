@@ -140,3 +140,5 @@ def get_receipt(request,*args,**kwargs):
         receipt.pdf.open('rb'),
         content_type ='application/pdf'
     )
+
+

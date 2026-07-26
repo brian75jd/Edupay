@@ -43,7 +43,19 @@ const getCookie = (name) => {
 };
 
 
+document.addEventListener('DOMContentLoaded',async ()=>{
+  try {
+    const response = await fetch(API_ROUTES.transactions,{
+      method:"GET"
+    })
 
+    data = await response.json();
+    console.log(data)
+    
+  } catch (error) {
+    console.warn(error)
+  }
+})
 
 
 const apiFetch = async (path, { method = 'GET', body } = {}) => {
