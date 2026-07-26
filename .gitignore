@@ -7,3 +7,5 @@ db.sqlite3
 logs/
 logs
 app.log
+static
+school_documents

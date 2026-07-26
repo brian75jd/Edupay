@@ -1,0 +1,54 @@
+<script>
+(function() {
+  var user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  var school = JSON.parse(localStorage.getItem('schoolInfo') || '{}');
+  var txns = JSON.parse(localStorage.getItem('transactions') || '[]');
+
+  $('#ac-dash-welcome').text((user.firstName || '') + ' ' + (user.lastName || ''));
+  $('#ac-dash-sname').text(school.name || '—');
+  $('#ac-dash-sloc').text(school.location || '—');
+
+  var today = new Date();
+  var todayStr = today.toISOString().split('T')[0];
+  var monthStr = todayStr.substring(0, 7);
+
+  var todayTxns = txns.filter(function(t) { return t.date === todayStr; });
+  var monthTxns = txns.filter(function(t) { return t.date.indexOf(monthStr) === 0; });
+
+  var todayTotal = 0; todayTxns.forEach(function(t) { todayTotal += t.amount; });
+  var monthTotal = 0; monthTxns.forEach(function(t) { monthTotal += t.amount; });
+  var pending = txns.filter(function(t) { return t.status === 'Pending' || t.status === 'Partial'; }).length;
+
+  $('#ac-dash-today').text(fmtMoney(todayTotal));
+  $('#ac-dash-txn-count').text(todayTxns.length);
+  $('#ac-dash-pending').text(pending);
+  $('#ac-dash-monthly').text(fmtMoney(monthTotal));
+
+  var outstanding = [
+    { name: "John Katengeza", level: "Form 3", owes: 60000 },
+    { name: "Tiwanike Mvula", level: "Form 2", owes: 95000 },
+    { name: "Chisomo Nkhwazi", level: "Form 1", owes: 30000 },
+    { name: "Annifer Phiri", level: "Form 4", owes: 120000 }
+  ];
+  $('#ac-dash-outstanding').html(outstanding.map(function(o) {
+    var initials = o.name.split(' ').map(function(w) { return w[0]; }).join('');
+    return '<div class="outstanding-item"><div class="outstanding-avatar">' + initials + '</div><div class="outstanding-info"><strong>' + o.name + '</strong><small>' + o.level + ' — Owes MWK ' + Number(o.owes).toLocaleString() + '</small></div><span class="badge badge-failed">Overdue</span></div>';
+  }).join(''));
+
+  var dayTotals = [0,0,0,0,0,0,0];
+  var weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - today.getDay());
+  var weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+
+  txns.forEach(function(t) {
+    var d = new Date(t.date);
+    if (d >= weekStart && d <= weekEnd) dayTotals[d.getDay()] += t.amount;
+  });
+
+  var maxDay = Math.max.apply(null, dayTotals) || 1;
+  $('#ac-dash-chart .chart-bar').each(function(i) {
+    $(this).css('height', Math.max(4, (dayTotals[i] / maxDay) * 100) + '%');
+  });
+})();
+</script>

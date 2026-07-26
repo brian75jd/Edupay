@@ -11,8 +11,16 @@ from Payments.serializers import (
     View404ResponseSerializer,
     PaymentUserCredentials
 )
-
+from Payments.models import Transaction
 from Payments.services.Payments import PaychanguInitiatePayment
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import AllowAny
+from Payments.services.utils import verify_signature
+from Payments.services.Exceptions import PayChanguWebhookException
+from Payments.permissions import HasSessionKey
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -25,6 +33,7 @@ logger = logging.getLogger(__name__)
 )
 class InitiatePayment(APIView):
     authentication_classes = []
+    permission_classes = [HasSessionKey]
 
     @staticmethod
     def post(request, *args, **kwargs):
@@ -33,7 +42,7 @@ class InitiatePayment(APIView):
 
             serializer.is_valid(raise_exception=True)
             checkout = PaychanguInitiatePayment.initiate_payment(
-                validated_data=serializer.validated_data
+                validated_data=serializer.validated_data,request=request
             )
 
             if checkout.get('success'):
@@ -42,6 +51,52 @@ class InitiatePayment(APIView):
                     'checkout_url': checkout.get('checkout_url')
                 })
 
+            return Response({
+                'detail':checkout.get('detail')
+            })
+
         except Exception:
             logger.exception('ERROR: ')
             raise
+
+
+
+
+@method_decorator(csrf_exempt,name='dispatch')
+class Payment_Webhook(APIView):
+    permission_classes = [AllowAny]
+
+    @staticmethod
+    def post(request, *args, **kwargs):
+
+        if not verify_signature(request=request):
+            raise PayChanguWebhookException()
+        try:
+            data = request.data
+            print('data',data)
+
+            tx_ref = data.get('tx_ref')
+            resp_status = data.get('status')
+
+            try:
+                transaction = Transaction.objects.get(
+                        id = tx_ref
+                    )
+            except Transaction.DoesNotExist:
+                return Response({'success':False},status=404)
+
+            if resp_status != "success":
+                transaction.status = 'failed'
+                transaction.save(update_fields=['status'])
+                return Response(status=200)
+
+            transaction.status = 'success'
+            transaction.save(update_fields=['status'])
+
+            return Response(status=200)
+
+        except Exception as exp:
+            logger.exption('ERROR: ')
+            raise
+
+          

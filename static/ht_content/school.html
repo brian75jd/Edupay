@@ -1,0 +1,73 @@
+<script>
+(function() {
+  var school = JSON.parse(localStorage.getItem('schoolInfo') || '{}');
+  var hasSchool = school.name && school.location;
+
+  function renderSchool() {
+    $('#ht-school-name').text(school.name || 'Not set');
+    $('#ht-school-location').text(school.location || 'Not set');
+    $('#ht-school-type').text(school.type || 'Not set');
+    $('#ht-school-edit-name').val(school.name || '');
+    $('#ht-school-edit-location').val(school.location || '');
+    $('#ht-school-edit-type').val(school.type || '');
+  }
+
+  window.refreshHtSchool = function () {
+    school = JSON.parse(localStorage.getItem('schoolInfo') || '{}');
+    hasSchool = school.name && school.location;
+    if (!hasSchool) {
+      $('#ht-school-display, #ht-school-edit-form, #ht-school-edit-btn').hide();
+      $('#ht-school-create-btn').show();
+    } else {
+      $('#ht-school-create-btn, #ht-school-edit-form').hide();
+      $('#ht-school-display, #ht-school-edit-btn').show();
+      renderSchool();
+    }
+  };
+
+  // Open create modal — reset fields
+  $(document).on('click', '#ht-school-create-btn', function () {
+    $('#schoolModalName, #schoolModalLocation').val('');
+    $('#schoolModalType').val('');
+    $('#schoolModalError').text('');
+    $('#schoolModalOverlay, #schoolModal').addClass('open');
+  });
+
+  if (!hasSchool) {
+    $('#ht-school-display, #ht-school-edit-form, #ht-school-edit-btn').hide();
+    $('#ht-school-create-btn').show();
+  } else {
+    $('#ht-school-create-btn, #ht-school-edit-form').hide();
+    $('#ht-school-display, #ht-school-edit-btn').show();
+    renderSchool();
+
+    $('#ht-school-edit-btn').off('click').on('click', function() {
+      $('#ht-school-display').hide();
+      $('#ht-school-edit-form').show();
+    });
+
+    $('#ht-school-cancel-btn').off('click').on('click', function() {
+      renderSchool();
+      $('#ht-school-display').show();
+      $('#ht-school-edit-form').hide();
+      $('#ht-school-error').text('');
+    });
+
+    $('#ht-school-save-btn').off('click').on('click', function() {
+      var name = $('#ht-school-edit-name').val().trim();
+      var location = $('#ht-school-edit-location').val().trim();
+      var type = $('#ht-school-edit-type').val();
+      if (!name || !location || !type) {
+        $('#ht-school-error').text('Please fill in all fields');
+        return;
+      }
+      $('#ht-school-error').text('');
+      school = { name: name, location: location, type: type };
+      localStorage.setItem('schoolInfo', JSON.stringify(school));
+      renderSchool();
+      $('#ht-school-display').show();
+      $('#ht-school-edit-form').hide();
+    });
+  }
+})();
+</script>

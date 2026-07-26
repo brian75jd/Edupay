@@ -1,0 +1,27 @@
+<script>
+(function() {
+  var user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  var school = JSON.parse(localStorage.getItem('schoolInfo') || '{}');
+  var txns = JSON.parse(localStorage.getItem('transactions') || '[]');
+  var students = JSON.parse(localStorage.getItem('students') || '[]');
+
+  $('#ht-dash-welcome').text((user.firstName || '') + ' ' + (user.lastName || ''));
+  $('#ht-dash-sname').text(school.name || '—');
+  $('#ht-dash-sloc').text(school.location || '—');
+
+  var revenue = 0, paid = 0, pending = 0;
+  txns.forEach(function(t) { revenue += t.amount; if (t.status === 'Paid') paid++; else if (t.status === 'Pending') pending++; });
+  $('#ht-dash-revenue').text(fmtMoney(revenue));
+  $('#ht-dash-paid').text(paid);
+  $('#ht-dash-pending').text(pending);
+
+  var uniq = {};
+  students.forEach(function(s) { uniq[s.name] = true; });
+  $('#ht-dash-total').text(Object.keys(uniq).length);
+
+  var recent = txns.slice(-5).reverse();
+  $('#ht-dash-recent-txns').html(recent.map(function(t) {
+    return '<tr><td>' + t.student + '</td><td>' + t.level + '</td><td>' + fmtMoney(t.amount) + '</td><td>' + fmtDate(t.date) + '</td><td>' + methodIcon(t.method) + '</td><td>' + statusBadge(t.status) + '</td></tr>';
+  }).join(''));
+})();
+</script>

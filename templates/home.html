@@ -8,12 +8,13 @@
   <link rel="icon" type="image/x-icon" href="{% static 'images/logo.ico' %}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/staff_dashboard.css' %}">
 </head>
 <body>
 
   <nav class="navbar">
     <div class="container">
-      <a href="#" class="nav-brand">
+      <a href="/" class="nav-brand">
         <img src="{% static 'images/logo.png' %}" alt="Edupay" class="nav-brand-img">
         <div class="nav-brand-text">
           <span>EduPay <strong>Malawi</strong></span>
@@ -26,143 +27,175 @@
         <span></span>
       </button>
       <div class="nav-links" id="navLinks">
-        <a href="#">Home</a>
-        <a href="#">Schools</a>
-        <a href="#">Payments</a>
-        <a href="#">Accounts</a>
+        <a href="#" data-tab="dashboard" class="nav-link">Home</a>
+        <a href="#" data-tab="schools" class="nav-link">Schools</a>
+        <a href="#" data-tab="pay-fees" class="nav-link">Pay Fees</a>
+        <a href="#" data-tab="history" class="nav-link">History</a>
+        <a href="/school/login/" style="color:var(--primary);font-weight:600;"><i class="fa-solid fa-user-shield"></i> Staff</a>
+        <a href="#" id="parentLoginBtn"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+        <a href="#" id="parentLogoutLink" style="display:none;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
       </div>
     </div>
   </nav>
 
-  <section class="hero-home">
-    <div class="hero-home-overlay"></div>
-    <div class="container hero-home-content">
-      <h1>Pay Fast, <em>Smart</em><br>& Anywhere</h1>
-      <p>Select your school and view school fees. Pay using all kinds of method you want</p>
+  <!-- ═══ Panel: Dashboard/Home ═══ -->
+  <div id="panel-dashboard" class="dashboard-panel">
+    <section class="hero-home">
+      <div class="hero-home-overlay"></div>
+      <div class="container hero-home-content">
+        <h1>Pay Fast, <em>Smart</em><br>& Anywhere</h1>
+        <p>Select your school and view school fees. Pay using all kinds of method you want</p>
+      </div>
+    </section>
+    <div class="container" id="parent-dash-content"></div>
+  </div>
+
+  <!-- ═══ Panel: Schools ═══ -->
+  <div id="panel-schools" class="dashboard-panel">
+    <section class="schools-section" style="padding-top:24px;">
+      <div class="container">
+        <div class="schools-header">
+          <div class="schools-header-text">
+            <div class="schools-header-title">
+              <i class="fa-solid fa-building-columns"></i>
+              <h2>Schools</h2>
+            </div>
+            <p>Select your school to pay fees</p>
+          </div>
+        </div>
+        <div class="search-bar">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="schoolSearch" placeholder="Search school...">
+        </div>
+        <div class="school-list" id="schoolList"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══ Panel: Pay Fees ═══ -->
+  <div id="panel-pay-fees" class="dashboard-panel">
+    <section style="padding:24px 0;">
+      <div class="container">
+        <div id="pay-fees-content"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══ Panel: History ═══ -->
+  <div id="panel-history" class="dashboard-panel">
+    <section style="padding:24px 0;">
+      <div class="container">
+        <div class="schools-header" style="margin-bottom:16px;">
+          <div class="schools-header-text">
+            <div class="schools-header-title">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <h2>Payment History</h2>
+            </div>
+            <p>Your past fee payments</p>
+          </div>
+        </div>
+        <div id="history-content"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══ Login Modal ═══ -->
+  <div class="modal-overlay" id="parentLoginOverlay"></div>
+  <div class="modal" id="parentLoginModal">
+    <div class="modal-header">
+      <h3>Parent Login</h3>
+      <button class="modal-close modal-close-btn">&times;</button>
     </div>
-  </section>
-
-  <section class="schools-section">
-    <div class="container">
-      <div class="schools-header">
-        <div class="schools-header-text">
-          <div class="schools-header-title">
-            <i class="fa-solid fa-building-columns"></i>
-            <h2>Schools</h2>
-          </div>
-          <p>Select your school to pay fees</p>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <div class="auth-phone-group">
+          <span class="auth-phone-prefix">+265</span>
+          <input type="tel" class="form-input auth-phone-input" id="parentLoginPhone" placeholder="Enter phone" maxlength="9">
         </div>
       </div>
-
-      <div class="search-bar">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="schoolSearch" placeholder="Search school........">
-      </div>
-
-      <div class="school-list" id="schoolList">
-        <div class="school-list-item">
-          <div class="school-logo">
-            <img src="https://via.placeholder.com/50/1a3a6b/ffffff?text=MA" alt="Maranatha Academy">
-          </div>
-          <div class="school-info">
-            <h3>Maranatha Academy</h3>
-            <p><i class="fa-solid fa-location-dot"></i> Blantyre</p>
-          </div>
-          <a href="/pay-fees/" class="btn btn-primary btn-sm pay-fees-btn"
-             data-school="Maranatha Academy"
-             data-location="Blantyre"
-             data-type="Secondary School"
-             data-logo="https://via.placeholder.com/60/1a3a6b/ffffff?text=MA"
-             data-amount="120,000.00">Pay Fees</a>
-        </div>
-
-        <div class="school-list-item">
-          <div class="school-logo">
-            <img src="https://via.placeholder.com/50/1a3a6b/ffffff?text=SA" alt="St Andrews Sec.">
-          </div>
-          <div class="school-info">
-            <h3>St Andrews Sec.</h3>
-            <p><i class="fa-solid fa-location-dot"></i> Lilongwe</p>
-          </div>
-          <a href="/pay-fees/" class="btn btn-primary btn-sm pay-fees-btn"
-             data-school="St Andrews Sec."
-             data-location="Lilongwe"
-             data-type="Secondary School"
-             data-logo="https://via.placeholder.com/60/1a3a6b/ffffff?text=SA"
-             data-amount="95,000.00">Pay Fees</a>
-        </div>
-
-        <div class="school-list-item">
-          <div class="school-logo">
-            <img src="https://via.placeholder.com/50/1a3a6b/ffffff?text=KU" alt="Kapeni University">
-          </div>
-          <div class="school-info">
-            <h3>Kapeni University</h3>
-            <p><i class="fa-solid fa-location-dot"></i> Zomba</p>
-          </div>
-          <a href="/pay-fees/" class="btn btn-primary btn-sm pay-fees-btn"
-             data-school="Kapeni University"
-             data-location="Zomba"
-             data-type="University"
-             data-logo="https://via.placeholder.com/60/1a3a6b/ffffff?text=KU"
-             data-amount="350,000.00">Pay Fees</a>
-        </div>
-
-        <div class="school-list-item">
-          <div class="school-logo">
-            <img src="https://via.placeholder.com/50/1a3a6b/ffffff?text=MU" alt="Mwaza University">
-          </div>
-          <div class="school-info">
-            <h3>Mwaza University</h3>
-            <p><i class="fa-solid fa-location-dot"></i> Rumphi</p>
-          </div>
-          <a href="/pay-fees/" class="btn btn-primary btn-sm pay-fees-btn"
-             data-school="Mwaza University"
-             data-location="Rumphi"
-             data-type="University"
-             data-logo="https://via.placeholder.com/60/1a3a6b/ffffff?text=MU"
-             data-amount="280,000.00">Pay Fees</a>
-        </div>
-
-        <div class="school-list-item">
-          <div class="school-logo">
-            <img src="https://via.placeholder.com/50/1a3a6b/ffffff?text=MU" alt="Mwaza University">
-          </div>
-          <div class="school-info">
-            <h3>Mwaza University</h3>
-            <p><i class="fa-solid fa-location-dot"></i> Rumphi</p>
-          </div>
-          <a href="/pay-fees/" class="btn btn-primary btn-sm pay-fees-btn"
-             data-school="Mwaza University"
-             data-location="Rumphi"
-             data-type="University"
-             data-logo="https://via.placeholder.com/60/1a3a6b/ffffff?text=MU"
-             data-amount="280,000.00">Pay Fees</a>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="auth-password-group">
+          <input type="password" class="form-input" id="parentLoginPassword" placeholder="Enter password">
+          <button type="button" class="password-toggle" data-target="parentLoginPassword"><i class="fa-solid fa-eye"></i></button>
         </div>
       </div>
+      <div class="form-error" id="parentLoginError"></div>
     </div>
-  </section>
+    <div class="modal-footer" style="justify-content:space-between;">
+      <span style="font-size:0.82rem;color:var(--text-muted);">Don't have an account? <a href="#" id="parentSignupFromLogin" style="color:var(--primary);font-weight:600;">Sign up</a></span>
+      <button class="btn btn-primary" id="parentLoginSaveBtn">Login</button>
+    </div>
+  </div>
 
+  <!-- ═══ Signup Modal ═══ -->
+  <div class="modal-overlay" id="parentSignupOverlay"></div>
+  <div class="modal" id="parentSignupModal">
+    <div class="modal-header">
+      <h3>Create Parent Account</h3>
+      <button class="modal-close modal-close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">First Name</label>
+        <input type="text" class="form-input" id="parentSignupFirst" placeholder="Enter first name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Last Name</label>
+        <input type="text" class="form-input" id="parentSignupLast" placeholder="Enter last name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="parentSignupEmail" placeholder="Enter email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <div class="auth-phone-group">
+          <span class="auth-phone-prefix">+265</span>
+          <input type="tel" class="form-input auth-phone-input" id="parentSignupPhone" placeholder="Enter phone" maxlength="9">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="auth-password-group">
+          <input type="password" class="form-input" id="parentSignupPassword" placeholder="Enter password (min 6 chars)">
+          <button type="button" class="password-toggle" data-target="parentSignupPassword"><i class="fa-solid fa-eye"></i></button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password</label>
+        <div class="auth-password-group">
+          <input type="password" class="form-input" id="parentSignupConfirm" placeholder="Confirm password">
+          <button type="button" class="password-toggle" data-target="parentSignupConfirm"><i class="fa-solid fa-eye"></i></button>
+        </div>
+      </div>
+      <div class="form-error" id="parentSignupError"></div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between;">
+      <span style="font-size:0.82rem;color:var(--text-muted);">Already have an account? <a href="#" id="parentLoginFromSignup" style="color:var(--primary);font-weight:600;">Login</a></span>
+      <button class="btn btn-primary" id="parentSignupSaveBtn">Create Account</button>
+    </div>
+  </div>
+
+  <!-- ═══ Bottom Nav ═══ -->
   <div class="bottom-nav">
-    <a class="bottom-nav-item active" href="#">
-      <i class="fa-solid fa-house"></i>
-      <span>Home</span>
+    <a class="bottom-nav-item active" href="#dashboard" data-tab="dashboard">
+      <i class="fa-solid fa-house"></i><span>Home</span>
     </a>
-    <a class="bottom-nav-item" href="#">
-      <i class="fa-solid fa-building-columns"></i>
-      <span>Schools</span>
+    <a class="bottom-nav-item" href="#schools" data-tab="schools">
+      <i class="fa-solid fa-building-columns"></i><span>Schools</span>
     </a>
-    <a class="bottom-nav-item" href="#">
-      <i class="fa-solid fa-credit-card"></i>
-      <span>Payments</span>
+    <a class="bottom-nav-item" href="#pay-fees" data-tab="pay-fees">
+      <i class="fa-solid fa-credit-card"></i><span>Pay</span>
     </a>
-    <a class="bottom-nav-item" href="#">
-      <i class="fa-solid fa-user"></i>
-      <span>Accounts</span>
+    <a class="bottom-nav-item" href="#history" data-tab="history">
+      <i class="fa-solid fa-clock-rotate-left"></i><span>History</span>
     </a>
   </div>
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="{% static 'js/main.js' %}"></script>
+  <script src="{% static 'js/parent_main.js' %}"></script>
 </body>
 </html>

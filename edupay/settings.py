@@ -10,7 +10,15 @@ SECRET_KEY = 'django-insecure-gsd&(7+092w7rx^f)32i46@03^qv4&z@dhptroj8v=^i))1s#w
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    'kaylin-plumbic-luana.ngrok-free.dev'
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://kaylin-plumbic-luana.ngrok-free.dev',
+    'http://localhost:8000'
+]
 
 
 AUTH_USER_MODEL = 'Users.User'
