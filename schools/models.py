@@ -20,6 +20,12 @@ class School(models.Model):
         DENIED = "denied", "Denied"
         SUSPENDED = "suspended", "Suspended"
 
+    class SchoolType(models.TextChoices):
+        PRIMARY = "primary", "Primary School"
+        SECONDARY = "secondary", "Secondary School"
+        UNIVERSITY = "university", "University"
+        COLLEGE = "college", "College"
+
     name = models.CharField(max_length=255, db_index=True)
     postal_address = models.CharField(max_length=255)
     logo = models.ImageField(upload_to="school_logos/", blank=True, null=True)
@@ -34,6 +40,12 @@ class School(models.Model):
         help_text="List of contact phone numbers, e.g. ['+265991234567'].",
     )
     website_url = models.URLField(blank=True, null=True)
+    school_type = models.CharField(
+        max_length=20, choices=SchoolType.choices, default=SchoolType.SECONDARY
+    )
+    fee_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
