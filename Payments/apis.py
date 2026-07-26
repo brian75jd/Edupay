@@ -7,12 +7,16 @@ from drf_spectacular.utils import (
     extend_schema,
   
 )
+from django.db.models.functions import Coalesce
+from decimal import Decimal
 from Payments.serializers import (
     InitiatePaymentResponseSerializer,
     View404ResponseSerializer,
     PaymentUserCredentials,
-    ReceiptSerializer
+    TransanctionSerializer
+   
 )
+from schools.models import School
 from Payments.models import Transaction,Receipt,LedgerEntry
 from Payments.services.Payments import PaychanguInitiatePayment
 from django.utils.decorators import method_decorator
@@ -22,6 +26,9 @@ from Payments.services.utils import verify_signature
 from Payments.services.Exceptions import PayChanguWebhookException
 from Payments.permissions import HasSessionKey
 from Payments.services.receipts import ReceiptGenerator, ReceiptPDF
+
+from django.db.models import Q, Sum,Count
+
 
 logger = logging.getLogger(__name__)
 
@@ -142,3 +149,33 @@ def get_receipt(request,*args,**kwargs):
     )
 
 
+class SchoolDetailView(APIView):
+    permission_classes =[]
+
+    def get(self,request,*args,**kwargs):
+        school = School.objects.get(user = request.user)
+        transactions = Transaction.objects.filter(
+            school = school
+        )
+
+        serializer = TransanctionSerializer(transactions, many=True)
+
+        stats = transactions.aggregate(
+            total_success_amount=Coalesce(
+                Sum("amount", filter=Q(status=Transaction.STATUS.SUCCESS)),
+                Decimal("0.00")
+            ),
+            pending_transactions=Count(
+                "id",
+                filter=Q(status=Transaction.STATUS.PENDING)
+            ),
+            successful_transactions=Count(
+                "id",
+                filter=Q(status=Transaction.STATUS.SUCCESS)
+            ),
+        )
+
+        return Response({
+            "transactions": serializer.data,
+            "summary": stats
+        })

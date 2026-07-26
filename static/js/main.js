@@ -15,7 +15,6 @@ const API_ROUTES = {
 
  
 
-
   schools: '/api/create_school/',
   schoolMine: '/api/schools/mine/',
   schoolById: (id) => `/api/schools/${id}/`,
@@ -25,7 +24,7 @@ const API_ROUTES = {
 
   profile: '/api/profile/',
 
-  transactions: '/api/transactions/',
+  transactions: '/payment/transactions/',
   students: '/api/students/',
 
   dashboardHt: '/api/dashboard/headteacher/',
@@ -43,6 +42,9 @@ const getCookie = (name) => {
 };
 
 
+tbody = document.getElementById('ht-dash-recent-txns');
+
+
 document.addEventListener('DOMContentLoaded',async ()=>{
   try {
     const response = await fetch(API_ROUTES.transactions,{
@@ -50,7 +52,25 @@ document.addEventListener('DOMContentLoaded',async ()=>{
     })
 
     data = await response.json();
-    console.log(data)
+    if(!response.ok)return;
+  
+    document.getElementById('ht-dash-revenue').innerHTML = `MKW ${(data.summary.total_success_amount).toLocaleString()}`;
+    document.getElementById('ht-dash-pending').innerHTML = data.summary.pending_transactions;
+
+    data.transactions.forEach(dt=>{
+      const row = document.createElement('tr')
+
+      row.innerHTML = `
+      <td>${dt.paid_for}</td>
+      <td></td>
+      <td>${dt.amount}</td>
+      <td>${dt.date_created}</td>
+      <td>${dt.paid_for}</td>
+      <td>${dt.status}</td>`
+
+      tbody.appendChild(row)
+      
+    })
     
   } catch (error) {
     console.warn(error)
@@ -845,3 +865,5 @@ function initDashboardSpa() {
     await loadPanel(location.hash.replace('#', '') || 'dashboard');
   })();
 }
+
+document.addEventListener('DOMContentLoaded',populateHtTransactions())

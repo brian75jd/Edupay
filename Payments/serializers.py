@@ -1,5 +1,15 @@
 from rest_framework import serializers
-from Payments.models import Receipt
+from Payments.models import Receipt,Transaction
+from schools.models import School
+
+class TransanctionSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Transaction
+        fields = ('id','paid_for','date_created','status','amount')
+
+
+
 
 
 class ReceiptSerializer(serializers.ModelSerializer):
