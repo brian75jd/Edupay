@@ -1,11 +1,11 @@
 from rest_framework.routers import DefaultRouter
+from django.urls import path
+from .views import PaymentMethodViewSet, SchoolViewSet,SchoolView
 
-from .views import PaymentMethodViewSet, SchoolViewSet
+
 
 app_name = "schools"
 
-router = DefaultRouter()
-router.register(r"schools", SchoolViewSet, basename="school")
-router.register(r"payment-methods", PaymentMethodViewSet, basename="paymentmethod")
-
-urlpatterns = router.urls
+urlpatterns =[
+    path('school_all/',SchoolView.as_view(),name='school_all')
+]

@@ -8,13 +8,8 @@ phone_validator = RegexValidator(
 
 
 class School(models.Model):
-    """A school registered on the EduPay platform.
 
-    A school must reach ``status = APPROVED`` before it appears in
-    parent-facing search results or can receive payments.
-    """
-
-    class Status(models.TextChoices):
+    class STATUS(models.TextChoices):
         APPROVED = "approved", "Approved"
         PENDING = "pending", "Pending"
         DENIED = "denied", "Denied"
@@ -30,9 +25,10 @@ class School(models.Model):
     postal_address = models.CharField(max_length=255)
     logo = models.ImageField(upload_to="school_logos/", blank=True, null=True)
     email = models.EmailField()
+    location = models.CharField(default="Lilongwe",max_length=300)
     official_document = models.FileField(upload_to="school_documents/")
     status = models.CharField(
-        max_length=20, choices=Status.choices, default=Status.PENDING
+        max_length=20, choices=STATUS.choices, default=STATUS.PENDING
     )
     phone_numbers = models.JSONField(
         default=list,
@@ -69,12 +65,7 @@ class School(models.Model):
 
 
 class PaymentMethod(models.Model):
-    """A bank or mobile money channel a school uses to receive payouts.
 
-    EduPay disburses a school's accumulated ledger balance to one of its
-    active payment methods when a :class:`transactions.models.Transaction`
-    is run.
-    """
 
     class PaymentType(models.TextChoices):
         BANK = "bank", "Bank"

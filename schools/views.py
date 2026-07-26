@@ -12,7 +12,27 @@ from .serializers import (
     SchoolRegistrationSerializer,
     SchoolStatusUpdateSerializer,
 )
+from rest_framework.views import APIView
 
+class SchoolView(APIView):
+    def get(self,request,*args,**kwargs):
+
+        query_set = School.objects.filter(
+            status = School.STATUS.APPROVED
+        )
+        serializer = SchoolDetailSerializer(query_set, many=True)
+
+        return Response({
+            'success':True,
+            'data':serializer.data
+        },status = 200)
+
+
+class CreateSchoolView(APIView):
+    permission_classes =[]
+
+    def post(self,request,*args, **kwargs):
+        serializer = SchoolRegistrationSerializer()
 
 class SchoolViewSet(viewsets.ModelViewSet):
     """

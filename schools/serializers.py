@@ -18,8 +18,7 @@ class PaymentMethodSerializer(serializers.ModelSerializer):
 
 
 class SchoolListSerializer(serializers.ModelSerializer):
-    """Lightweight representation used for search / list results."""
-
+    
     class Meta:
         model = School
         fields = ["id", "name", "postal_address", "logo", "status", "website_url",
@@ -27,45 +26,21 @@ class SchoolListSerializer(serializers.ModelSerializer):
 
 
 class SchoolDetailSerializer(serializers.ModelSerializer):
-    """Full representation used for a single school's profile."""
-
-    payment_methods = PaymentMethodSerializer(many=True, read_only=True)
-
+    
     class Meta:
         model = School
         fields = [
             "id",
             "name",
-            "postal_address",
             "logo",
-            "email",
-            "official_document",
-            "status",
-            "phone_numbers",
-            "website_url",
-            "payment_methods",
-            "created_at",
-            "updated_at",
+            'location'
+
         ]
-        read_only_fields = ["id", "status", "created_at", "updated_at"]
 
 
-class SchoolRegistrationSerializer(serializers.ModelSerializer):
-    """Used when a school signs up. Status always starts as 'pending'."""
+class SchoolRegistrationSerializer(serializers.Serializer):
+    first_name = serializers.CharField(max_length = 300)
 
-    class Meta:
-        model = School
-        fields = [
-            "id",
-            "name",
-            "postal_address",
-            "logo",
-            "email",
-            "official_document",
-            "phone_numbers",
-            "website_url",
-        ]
-        read_only_fields = ["id"]
 
     def create(self, validated_data):
         validated_data["status"] = School.Status.PENDING
