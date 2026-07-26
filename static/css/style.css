@@ -1441,6 +1441,12 @@ ul {
   padding: 32px 0;
 }
 
+@media (min-width: 769px) {
+  .home-schools-section .container {
+    max-width: 560px;
+  }
+}
+
 /* ── Page Header ────────────────────────────────────── */
 .page-header {
   display: flex;
@@ -1733,6 +1739,56 @@ ul {
   color: var(--text-muted);
   margin: 20px 0;
   line-height: 1.6;
+}
+
+/* ── Failed Page ─────────────────────────────────────── */
+.failed-icon {
+  text-align: center;
+  margin: 24px 0 16px;
+}
+
+.failed-icon i {
+  font-size: 4rem;
+  color: var(--primary);
+}
+
+.failed-title {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.failed-subtitle {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.pending-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.pending-note {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 20px 0;
+  line-height: 1.6;
+}
+
+.btn-danger-outline {
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.btn-danger-outline:hover {
+  background: var(--primary-light);
 }
 
 /* ── Responsive ─────────────────────────────────────── */
