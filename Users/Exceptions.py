@@ -12,3 +12,10 @@ class UserCredentialException(APIException):
     status_code = 400
     default_detail = 'PIN and phone number we not found'
     default_code = 'credential_error'
+
+
+
+class ParentUserException(APIException):
+    status_code = 400
+    default_code = 'parent_exp'
+    default_detail = 'Session expired. please log in again'

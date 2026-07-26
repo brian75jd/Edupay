@@ -1,4 +1,5 @@
-from Users.serializers import ParentCreationSerializer, Response200Serializer
+from Users.serializers import (ParentCreationSerializer, 
+                               Response200Serializer,UserHistory200Response)
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -7,6 +8,14 @@ from drf_spectacular.utils import (
 )
 from Payments.serializers import View404ResponseSerializer
 from Users.utils import ParentCreationView,authenticate
+from Payments.models import Transaction
+from Users.models import ParentUserLogginSession
+from Users.Exceptions import ParentUserException
+from Users.serializers import TransactionSerializer
+
+
+
+
 
 @extend_schema(
     request=ParentCreationSerializer,
@@ -65,3 +74,30 @@ class UserLogginView(APIView):
 
         except Exception:
             raise
+
+
+@extend_schema(
+    responses={
+        200: UserHistory200Response
+    }
+)
+class UserHistory(APIView):
+    permission_classes = []
+
+    def get(self, request,*args, **kwargs):
+        try:
+            user = ParentUserLogginSession.objects.get(
+                session_key = request.session.get('session_key')
+            ).user
+        except ParentUserLogginSession.DoesNotExist:
+            raise ParentUserException()
+        
+        transaction = Transaction.objects.filter(
+            user = user
+        ).order_by('-date_created')
+        serializer = TransactionSerializer(transaction, many=True)
+
+        return Response({
+            'success':True,
+            'data':serializer.data
+        })
