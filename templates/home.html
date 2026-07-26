@@ -36,6 +36,26 @@
   <!-- ═══ App Content ═══ -->
   <div id="app-content"></div>
 
+  <!-- ═══ Bottom Nav (mobile app-style navigation) ═══ -->
+  <nav class="bottom-nav" id="bottomNav">
+    <a href="#" class="bottom-nav-item active" data-view="home">
+      <span class="bottom-nav-icon"><i class="fa-solid fa-house"></i></span>
+      <span>Home</span>
+    </a>
+    <a href="#" class="bottom-nav-item" data-view="schools">
+      <span class="bottom-nav-icon"><i class="fa-solid fa-landmark"></i></span>
+      <span>Schools</span>
+    </a>
+    <a href="#" class="bottom-nav-item" data-view="payments">
+      <span class="bottom-nav-icon"><i class="fa-solid fa-table-cells"></i></span>
+      <span>Payments</span>
+    </a>
+    <a href="#" class="bottom-nav-item" data-view="accounts">
+      <span class="bottom-nav-icon"><i class="fa-solid fa-clock"></i></span>
+      <span>Accounts</span>
+    </a>
+  </nav>
+
   <!-- ═══ Login Modal ═══ -->
   <div class="modal-overlay" id="parentLoginOverlay"></div>
   <div class="modal" id="parentLoginModal">
@@ -43,6 +63,7 @@
       <h3>Parent Login</h3>
       <button class="modal-close modal-close-btn">&times;</button>
     </div>
+
     <div class="modal-body">
       <div class="form-group">
         <label class="form-label">Phone Number</label>

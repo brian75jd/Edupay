@@ -1,12 +1,17 @@
-from django.shortcuts import render
-
+from django.shortcuts import render,redirect
+from schools.models import School
 
 def home_view(request):
     return render(request, 'home.html')
 
 
-def pay_fees_view(request):
-    return render(request, 'pay_fees.html')
+def pay_fees_view(request,school_id):
+
+    try:
+        school = School.objects.get(id = school_id)
+    except School.DoesNotExist:
+        return redirect('/')
+    return render(request, 'pay_fees.html',{'school':school})
 
 
 def headteacher_dashboard_view(request):

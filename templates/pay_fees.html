@@ -52,23 +52,12 @@
 
       <div class="school-detail-card">
         <div class="school-detail-logo">
-          <img id="schoolLogo" src="https://via.placeholder.com/60/1a3a6b/ffffff?text=SA" alt="School Logo">
+          <img id="schoolLogo" src="{{school.logo}}" alt="School Logo">
         </div>
         <div class="school-detail-info">
-          <h2 id="schoolName">Maranatha Academy</h2>
+          <h2 id="schoolName">{{school.name}}</h2>
           <p><i class="fa-solid fa-location-dot"></i> <span id="schoolLocation">Blantyre</span></p>
           <p><i class="fa-solid fa-graduation-cap"></i> <span id="schoolType">Secondary School</span></p>
-        </div>
-      </div>
-
-      <div class="fees-summary-card">
-        <div class="fees-row">
-          <span class="fees-label">Total Fees</span>
-          <span class="fees-value highlight" id="totalFees">MWK 120,000.00</span>
-        </div>
-        <div class="fees-row">
-          <span class="fees-label">Fees Balance</span>
-          <span class="fees-value highlight" id="feesBalance">MWK 120,000.00</span>
         </div>
       </div>
 
@@ -76,12 +65,12 @@
       <div class="step-indicator" id="stepIndicator">
         <div class="step-item active" data-step="1">
           <div class="step-circle">1</div>
-          <span class="step-label">Student Details</span>
+          <span class="step-label">Verify Account</span>
         </div>
         <div class="step-line"></div>
         <div class="step-item" data-step="2">
           <div class="step-circle">2</div>
-          <span class="step-label">Verify Account</span>
+          <span class="step-label">Student Details</span>
         </div>
         <div class="step-line"></div>
         <div class="step-item" data-step="3">
@@ -90,13 +79,53 @@
         </div>
       </div>
 
-      <!-- Step 1: Student Details -->
-      <div class="form-section step-panel" id="step1Panel">
+      <!-- Step 1: Parent Authentication -->
+      <div class="step-panel" id="step1Panel">
+        <div class="auth-step-card">
+          <div class="auth-step-header">
+            <i class="fa-solid fa-user-lock"></i>
+            <h3>Parent Authentication</h3>
+          </div>
+
+          <div class="auth-step-actions" style="margin-bottom: 20px;">
+            <button type="button" class="btn btn-primary btn-sm" id="authModeLoginBtn" data-mode="login">Login</button>
+            <button type="button" class="btn btn-outline btn-sm" id="authModeSignupBtn" data-mode="signup">Create Account</button>
+          </div>
+
+          <p class="auth-step-desc" id="authStepDesc">Enter your phone number and PIN to continue</p>
+
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <div class="auth-phone-group">
+              <span class="auth-phone-prefix">+265</span>
+              <input type="tel" class="form-input auth-phone-input" id="parentPhone" placeholder="Enter phone number" maxlength="9">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">PIN</label>
+            <div class="auth-phone-group">
+              <input type="password" class="form-input auth-phone-input" id="parentPIN" placeholder="Enter PIN" maxlength="9">
+            </div>
+          </div>
+
+          <div class="form-error" id="phoneError"></div>
+          <button type="button" class="btn btn-primary btn-block" id="parentAuthContinue">Continue</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Student Details -->
+      <div class="form-section step-panel step-panel-hidden" id="step2Panel">
         <h3 class="form-section-title">Student Information</h3>
 
         <div class="form-group">
-          <label class="form-label">Student Full Name</label>
-          <input type="text" class="form-input" id="studentName" placeholder="Enter full name">
+          <label class="form-label">Student First Name</label>
+          <input type="text" class="form-input" id="studentFirstName" placeholder="Enter first name">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Student Last Name</label>
+          <input type="text" class="form-input" id="studentLastName" placeholder="Enter last name">
         </div>
 
         <div class="form-group">
@@ -114,100 +143,17 @@
           </select>
         </div>
 
-        <div class="step-error" id="step1Error"></div>
-
-        <button type="button" class="btn btn-primary btn-block" id="step1Next">Continue</button>
-      </div>
-
-      <!-- Step 2: Parent Authentication -->
-      <div class="step-panel step-panel-hidden" id="step2Panel">
-
-        <div class="auth-step" id="stepPhone">
-          <div class="auth-step-card">
-            <div class="auth-step-header">
-              <i class="fa-solid fa-user-lock"></i>
-              <h3>Parent Authentication</h3>
-            </div>
-            <p class="auth-step-desc">Enter your phone number to continue</p>
-            <div class="form-group">
-              <label class="form-label">Phone Number</label>
-              <div class="auth-phone-group">
-                <span class="auth-phone-prefix">+265</span>
-                <input type="tel" class="form-input auth-phone-input" id="parentPhone" placeholder="Enter phone number" maxlength="9">
-              </div>
-            </div>
-            <div class="form-error" id="phoneError"></div>
-            <button type="button" class="btn btn-primary btn-block" id="parentAuthContinue">Continue</button>
+        <div class="form-group">
+          <label class="form-label">Amount</label>
+          <div class="auth-phone-group">
+            <span class="auth-phone-prefix">MWK</span>
+            <input type="number" class="form-input" id="feeAmount" placeholder="Enter amount" min="0" step="0.01">
           </div>
         </div>
 
-        <div class="auth-step auth-step-hidden" id="stepSignup">
-          <div class="auth-step-card">
-            <div class="auth-step-header">
-              <i class="fa-solid fa-user-plus"></i>
-              <h3>Create Account</h3>
-            </div>
-            <p class="auth-step-desc">Phone: <strong id="signupPhoneDisplay">+265 888 123 456</strong></p>
-            <p class="auth-step-info">You're new here. Create a password to set up your account.</p>
-            <div class="form-group">
-              <label class="form-label">Create Password</label>
-              <div class="auth-password-group">
-                <input type="password" class="form-input" id="parentSignupPass" placeholder="Create a password">
-                <button type="button" class="password-toggle" data-target="parentSignupPass">
-                  <i class="fa-solid fa-eye"></i>
-                </button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Confirm Password</label>
-              <div class="auth-password-group">
-                <input type="password" class="form-input" id="parentSignupConfirm" placeholder="Confirm password">
-                <button type="button" class="password-toggle" data-target="parentSignupConfirm">
-                  <i class="fa-solid fa-eye"></i>
-                </button>
-              </div>
-            </div>
-            <div class="form-error" id="signupStepError"></div>
-            <div class="auth-step-actions">
-              <button type="button" class="btn btn-outline btn-sm" id="parentSignupBack">Back</button>
-              <button type="button" class="btn btn-primary btn-sm" id="parentSignupBtn">Create Account</button>
-            </div>
-          </div>
-        </div>
+        <div class="step-error" id="step2Error"></div>
 
-        <div class="auth-step auth-step-hidden" id="stepLogin">
-          <div class="auth-step-card">
-            <div class="auth-step-header">
-              <i class="fa-solid fa-arrow-right-to-bracket"></i>
-              <h3>Welcome Back</h3>
-            </div>
-            <p class="auth-step-desc">Phone: <strong id="loginPhoneDisplay">+265 888 123 456</strong></p>
-            <p class="auth-step-info">Enter your password to continue.</p>
-            <div class="form-group">
-              <label class="form-label">Password</label>
-              <div class="auth-password-group">
-                <input type="password" class="form-input" id="parentLoginPass" placeholder="Enter password">
-                <button type="button" class="password-toggle" data-target="parentLoginPass">
-                  <i class="fa-solid fa-eye"></i>
-                </button>
-              </div>
-            </div>
-            <div class="form-error" id="loginStepError"></div>
-            <div class="auth-step-actions">
-              <button type="button" class="btn btn-outline btn-sm" id="parentLoginBack">Back</button>
-              <button type="button" class="btn btn-primary btn-sm" id="parentLoginBtn">Login</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="auth-authenticated auth-step-hidden" id="stepAuthenticated">
-          <i class="fa-solid fa-circle-check"></i>
-          <div>
-            <strong>Authenticated</strong>
-            <span>Phone: <span class="auth-phone" id="authenticatedPhone">+265 888 123 456</span></span>
-          </div>
-        </div>
-
+        <button type="button" class="btn btn-primary btn-block" id="step2Next">Continue</button>
       </div>
 
       <!-- Step 3: Confirm & Pay -->
@@ -241,7 +187,6 @@
     </div>
   </section>
 
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>

@@ -1,1142 +1,805 @@
-$(document).ready(function () {
+const API_ROUTES = {
+  login: '/api/auth/login/',
+  logout: '/api/auth/logout/',
+  me: '/api/auth/me/',
+  headteacherSignup: '/api/auth/headteacher-signup/',
+  changePassword: '/api/auth/change-password/',
 
-  // Seed demo accounts — merge into existing to always keep demo credentials
-  var staffAccounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
-  var demoAccounts = {
-    "999999999": {
-      password: "head123",
-      role: "headteacher",
-      firstName: "John",
-      lastName: "Banda",
-      email: "john.banda@edupay.mw"
-    },
-    "888888888": {
-      password: "acc123",
-      role: "accountant",
-      firstName: "Grace",
-      lastName: "Mhango",
-      email: "grace.mhango@edupay.mw"
-    }
-  };
-  Object.keys(demoAccounts).forEach(function (key) {
-    if (!staffAccounts[key]) staffAccounts[key] = demoAccounts[key];
+  schools: '/api/schools/',
+  schoolMine: '/api/schools/mine/',
+  schoolById: (id) => `/api/schools/${id}/`,
+
+  accountants: '/api/accountants/',
+  accountantById: (id) => `/api/accountants/${id}/`,
+
+  profile: '/api/profile/',
+
+  transactions: '/api/transactions/',
+  students: '/api/students/',
+
+  dashboardHt: '/api/dashboard/headteacher/',
+  dashboardAc: '/api/dashboard/accountant/',
+
+  parentLogin: '/user/v1/user_login/',
+  parentCreateAccount: '/user/v1/create_user_account/',
+
+  paymentInitiate: '/payment/v1/initiate_payment/',
+};
+
+const getCookie = (name) => {
+  const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+  return match ? decodeURIComponent(match[2]) : null;
+};
+
+
+const apiFetch = async (path, { method = 'GET', body } = {}) => {
+  const headers = { 'Content-Type': 'application/json' };
+  if (method !== 'GET') headers['X-CSRFToken'] = getCookie('csrftoken');
+
+  const res = await fetch(path, {
+    method,
+    headers,
+    credentials: 'include',
+    body: body !== undefined ? JSON.stringify(body) : undefined,
   });
-  localStorage.setItem('staffAccounts', JSON.stringify(staffAccounts));
 
-  // Seed parent accounts
-  var parentAccounts = JSON.parse(localStorage.getItem('parentAccounts') || '{}');
-  var demoParents = {
-    "888123456": { password: "parent123", firstName: "Alice", lastName: "Mwale", email: "alice@example.com" }
-  };
-  Object.keys(demoParents).forEach(function (key) {
-    if (!parentAccounts[key]) parentAccounts[key] = demoParents[key];
-  });
-  localStorage.setItem('parentAccounts', JSON.stringify(parentAccounts));
+  let data = null;
+  try { data = await res.json(); } catch {  }
 
-  // Seed parent schools
-  // Parent schools are now fetched from the API via parent_school_manager.js
-
-  // Seed parent transactions
-  if (!localStorage.getItem('parentTransactions')) {
-    localStorage.setItem('parentTransactions', JSON.stringify([
-      { id: "RCP20260725-001", student: "Chifundo Banda", level: "Form 3", amount: 120000, date: "2026-07-25", method: "Airtel Money", status: "Paid", term: "Term 2", school: "Maranatha Academy" },
-      { id: "RCP20260720-002", student: "Grace Mlenga", level: "Form 1", amount: 95000, date: "2026-07-20", method: "TNM Mpamba", status: "Paid", term: "Term 2", school: "St Andrews Sec." },
-    ]));
+  if (!res.ok) {
+    const message = data?.detail || data?.error || data?.message || 'Something went wrong. Please try again.';
+    throw new Error(message);
   }
+  return data;
+};
 
-  // Sidebar toggle
-  $('#sidebarToggle').on('click', function () {
-    $('#sidebar, #sidebarOverlay').addClass('open');
-    $('body').addClass('sidebar-open');
-  });
-  $('#sidebarOverlay').on('click', function () {
-    $('#sidebar, #sidebarOverlay').removeClass('open');
-    $('body').removeClass('sidebar-open');
-  });
-  $('.sidebar-item').on('click', function () {
-    $('#sidebar, #sidebarOverlay').removeClass('open');
-    $('body').removeClass('sidebar-open');
-  });
 
-  // Mobile nav toggle
-  $('#navToggle').on('click', function () {
-    $('#navLinks').toggleClass('open');
-  });
+const byId = (id) => document.getElementById(id);
+const qs = (sel, root = document) => root.querySelector(sel);
+const qsAll = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const on = (el, evt, handler) => el?.addEventListener(evt, handler);
+const setText = (el, value) => { if (el) el.textContent = value; };
+const getVal = (el) => el?.value ?? '';
+const setVal = (el, v) => { if (el) el.value = v; };
+const show = (el) => { if (el) el.style.display = ''; };
+const hide = (el) => { if (el) el.style.display = 'none'; };
+const addClassAll = (sel, cls) => qsAll(sel).forEach((el) => el.classList.add(cls));
+const removeClassAll = (sel, cls) => qsAll(sel).forEach((el) => el.classList.remove(cls));
 
-  // Close mobile nav on link click
-  $('#navLinks a').on('click', function () {
-    $('#navLinks').removeClass('open');
-  });
+const fmtMoney = (amount) => `MWK ${Number(amount).toLocaleString()}`;
+const fmtDate = (d) => {
+  const [y, m, day] = d.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${parseInt(day, 10)} ${months[parseInt(m, 10) - 1]} ${y}`;
+};
+const statusBadge = (status) => {
+  if (['Paid', 'Active', 'Verified'].includes(status)) return `<span class="badge badge-success">${status}</span>`;
+  if (['Partial', 'Pending'].includes(status)) return `<span class="badge badge-pending">${status}</span>`;
+  return `<span class="badge badge-failed">${status}</span>`;
+};
+const methodIcon = (method) => {
+  if (method === 'Airtel Money') return '<i class="fa-solid fa-mobile-screen-button method-icon-airtel"></i> Airtel';
+  if (method === 'TNM Mpamba') return '<i class="fa-solid fa-mobile-screen-button method-icon-tnm"></i> TNM';
+  if (method === 'National Bank') return '<i class="fa-solid fa-building-columns method-icon-bank"></i> NB';
+  return method;
+};
 
-  // School search filter
-  $('#schoolSearch').on('keyup', function () {
-    var value = $(this).val().toLowerCase();
-    $('#schoolList .school-list-item').each(function () {
-      var schoolName = $(this).find('.school-info h3').text().toLowerCase();
-      var location = $(this).find('.school-info p').text().toLowerCase();
-      if (schoolName.indexOf(value) > -1 || location.indexOf(value) > -1) {
-        $(this).show();
-      } else {
-        $(this).hide();
-      }
+document.addEventListener('DOMContentLoaded', () => {
+  initGlobalUI();
+  initPayFeesFlow();
+  initStaffAuthForms();
+  initDashboardSpa();
+});
+
+function initGlobalUI() {
+  on(byId('sidebarToggle'), 'click', () => {
+    addClassAll('#sidebar, #sidebarOverlay', 'open');
+    document.body.classList.add('sidebar-open');
+  });
+  on(byId('sidebarOverlay'), 'click', () => {
+    removeClassAll('#sidebar, #sidebarOverlay', 'open');
+    document.body.classList.remove('sidebar-open');
+  });
+  qsAll('.sidebar-item').forEach((el) => on(el, 'click', () => {
+    removeClassAll('#sidebar, #sidebarOverlay', 'open');
+    document.body.classList.remove('sidebar-open');
+  }));
+
+  on(byId('navToggle'), 'click', () => byId('navLinks')?.classList.toggle('open'));
+  qsAll('#navLinks a').forEach((a) => on(a, 'click', () => byId('navLinks')?.classList.remove('open')));
+
+
+  on(byId('schoolSearch'), 'keyup', function () {
+    const value = this.value.toLowerCase();
+    qsAll('#schoolList .school-list-item').forEach((item) => {
+      const name = qs('.school-info h3', item)?.textContent.toLowerCase() ?? '';
+      const location = qs('.school-info p', item)?.textContent.toLowerCase() ?? '';
+      item.style.display = (name.includes(value) || location.includes(value)) ? '' : 'none';
     });
   });
 
-  // Bottom nav active state
-  $('.bottom-nav-item').on('click', function (e) {
+  qsAll('.bottom-nav-item').forEach((item) => on(item, 'click', (e) => {
     e.preventDefault();
-    $('.bottom-nav-item').removeClass('active');
-    $(this).addClass('active');
-  });
+    removeClassAll('.bottom-nav-item', 'active');
+    item.classList.add('active');
+  }));
 
-  // Pay Fees button — store school data and navigate
-  $('.pay-fees-btn').on('click', function (e) {
-    e.preventDefault();
-    var schoolData = {
-      name: $(this).data('school'),
-      location: $(this).data('location'),
-      type: $(this).data('type'),
-      logo: $(this).data('logo'),
-      amount: $(this).data('amount')
-    };
-    localStorage.setItem('selectedSchool', JSON.stringify(schoolData));
-    window.location.href = '/pay-fees/';
-  });
+  qsAll('.password-toggle').forEach((toggle) => on(toggle, 'click', () => {
+    const input = byId(toggle.dataset.target);
+    const icon = qs('i', toggle);
+    if (!input) return;
+    const showing = input.getAttribute('type') === 'password';
+    input.setAttribute('type', showing ? 'text' : 'password');
+    icon?.classList.toggle('fa-eye', !showing);
+    icon?.classList.toggle('fa-eye-slash', showing);
+  }));
 
-  // Pay Fees page — populate school data from localStorage
-  if ($('#schoolName').length) {
-    var school = JSON.parse(localStorage.getItem('selectedSchool'));
-    if (school) {
-      $('#schoolName').text(school.name);
-      $('#schoolLocation').text(school.location);
-      $('#schoolType').text(school.type);
-      $('#schoolLogo').attr('src', school.logo).attr('alt', school.name);
-      $('#totalFees').text('MWK ' + school.amount);
-      $('#feesBalance').text('MWK ' + school.amount);
-      $('#confirmSchool').text(school.name);
-      $('#confirmTotal').text('MWK ' + school.amount);
-    }
-  }
-
-  // ── Password Toggle ─────────────────────────────────
-  $('.password-toggle').on('click', function () {
-    var targetId = $(this).data('target');
-    var input = $('#' + targetId);
-    var icon = $(this).find('i');
-    if (input.attr('type') === 'password') {
-      input.attr('type', 'text');
-      icon.removeClass('fa-eye').addClass('fa-eye-slash');
-    } else {
-      input.attr('type', 'password');
-      icon.removeClass('fa-eye-slash').addClass('fa-eye');
-    }
-  });
-
-  // ── Phone Input — Digits Only ───────────────────────
-  $('.auth-phone-input').on('input', function () {
+  qsAll('.auth-phone-input').forEach((input) => on(input, 'input', function () {
     this.value = this.value.replace(/[^0-9]/g, '');
-  });
+  }));
+}
 
-  // ── Multi-Step Navigation ───────────────────────────
-  var currentStep = 1;
-  var parentPhone = '';
 
-  function goToStep(step) {
-    currentStep = step;
-    $('.step-panel').addClass('step-panel-hidden');
-    $('#step' + step + 'Panel').removeClass('step-panel-hidden');
+function initPayFeesFlow() {
 
-    $('.step-item').removeClass('active completed');
-    for (var i = 1; i <= 3; i++) {
-      if (i === step) {
-        $('.step-item[data-step="' + i + '"]').addClass('active');
-      } else if (i < step) {
-        $('.step-item[data-step="' + i + '"]').addClass('completed');
-      }
+  qsAll('.pay-fees-btn').forEach((btn) => on(btn, 'click', (e) => {
+    e.preventDefault();
+    const schoolId = btn.dataset.schoolId; 
+    window.location.href = `/pay-fees/?school=${encodeURIComponent(schoolId)}`;
+  }));
+
+  if (!byId('schoolName')) return;
+
+  (async () => {
+    const params = new URLSearchParams(window.location.search);
+    const schoolId = params.get('school');
+    if (!schoolId) return;
+
+    try {
+      const school = await apiFetch(API_ROUTES.schoolById(schoolId));
+      setText(byId('schoolName'), school.name);
+      setText(byId('schoolLocation'), school.location);
+      setText(byId('schoolType'), school.type);
+      const logo = byId('schoolLogo');
+      if (logo) { logo.setAttribute('src', school.logo); logo.setAttribute('alt', school.name); }
+      setText(byId('totalFees'), fmtMoney(school.amount));
+      setText(byId('feesBalance'), fmtMoney(school.amount));
+      setText(byId('confirmSchool'), school.name);
+    } catch (err) {
+      console.error('Failed to load school:', err.message);
     }
-  }
+  })();
 
-  // Step 1 → Step 2
-  $('#step1Next').on('click', function () {
-    var name = $('#studentName').val().trim();
-    var level = $('#studentLevel').val();
-    var error = '';
+  let parentPhone = '';
+  const selectedSchoolId = new URLSearchParams(window.location.search).get('school');
 
-    if (!name) error = 'Please enter the student full name';
-    else if (!level) error = 'Please select the level of study';
-
-    if (error) {
-      $('#step1Error').text(error);
-      return;
+  const goToStep = (step) => {
+    qsAll('.step-panel').forEach((p) => p.classList.add('step-panel-hidden'));
+    byId(`step${step}Panel`)?.classList.remove('step-panel-hidden');
+    removeClassAll('.step-item', 'active');
+    removeClassAll('.step-item', 'completed');
+    for (let i = 1; i <= 3; i++) {
+      const item = qs(`.step-item[data-step="${i}"]`);
+      if (!item) continue;
+      if (i === step) item.classList.add('active');
+      else if (i < step) item.classList.add('completed');
     }
+  };
 
-    $('#step1Error').text('');
-    goToStep(2);
-  });
+ 
+  let authMode = 'login';
 
-  // ── Parent Auth Flow (Step 2) ───────────────────────
+  const setAuthMode = (mode) => {
+    authMode = mode;
+    const loginBtn = byId('authModeLoginBtn');
+    const signupBtn = byId('authModeSignupBtn');
+    loginBtn?.classList.toggle('btn-primary', mode === 'login');
+    loginBtn?.classList.toggle('btn-outline', mode !== 'login');
+    signupBtn?.classList.toggle('btn-primary', mode === 'signup');
+    signupBtn?.classList.toggle('btn-outline', mode !== 'signup');
+    setText(byId('authStepDesc'), mode === 'login'
+      ? 'Enter your phone number and PIN to continue'
+      : 'Enter a phone number and PIN to create your account');
+    setText(byId('phoneError'), '');
+  };
 
-  function getRegisteredParents() {
-    return JSON.parse(localStorage.getItem('registeredParents') || '{}');
-  }
+  on(byId('authModeLoginBtn'), 'click', () => setAuthMode('login'));
+  on(byId('authModeSignupBtn'), 'click', () => setAuthMode('signup'));
 
-  function saveRegisteredParents(data) {
-    localStorage.setItem('registeredParents', JSON.stringify(data));
-  }
-
-  function showAuthSubStep(stepId) {
-    $('.auth-step').addClass('auth-step-hidden');
-    $('#' + stepId).removeClass('auth-step-hidden');
-  }
-
-  $('#parentAuthContinue').on('click', function () {
-    var phone = $('#parentPhone').val().trim();
+  on(byId('parentAuthContinue'), 'click', async () => {
+    const phone = getVal(byId('parentPhone')).trim();
+    const pin = getVal(byId('parentPIN')).trim();
     parentPhone = phone;
 
     if (!phone || phone.length < 9) {
-      $('#phoneError').text('Please enter a valid phone number (9 digits)');
-      return;
+      return setText(byId('phoneError'), 'Please enter a valid phone number (9 digits)');
     }
-    $('#phoneError').text('');
+    if (!pin || pin.length < 4) {
+      return setText(byId('phoneError'), 'Please enter a valid PIN (at least 4 digits)');
+    }
+    setText(byId('phoneError'), '');
 
-    var registeredParents = getRegisteredParents();
+    const endpoint = authMode === 'login' ? API_ROUTES.parentLogin : API_ROUTES.parentCreateAccount;
 
-    if (registeredParents[phone]) {
-      $('#loginPhoneDisplay').text('+265 ' + phone);
-      $('#loginStepError').text('');
-      $('#parentLoginPass').val('');
-      showAuthSubStep('stepLogin');
-    } else {
-      $('#signupPhoneDisplay').text('+265 ' + phone);
-      $('#signupStepError').text('');
-      $('#parentSignupPass').val('');
-      $('#parentSignupConfirm').val('');
-      showAuthSubStep('stepSignup');
+    try {
+      // Login verifies phone_number + PIN server-side; Create Account
+      // registers a new parent record with them. Either way, success
+      // moves on to the student details step.
+      await apiFetch(endpoint, { method: 'POST', body: { phone_number: phone, pin } });
+      setText(byId('phoneError'), '');
+      goToStep(2);
+    } catch (err) {
+      setText(byId('phoneError'), err.message);
     }
   });
 
-  $('#parentSignupBack, #parentLoginBack').on('click', function () {
-    showAuthSubStep('stepPhone');
-    $('#phoneError').text('');
-  });
+  // ── Step 2: Student details + amount ────────────────
+  on(byId('step2Next'), 'click', () => {
+    const firstName = getVal(byId('studentFirstName')).trim();
+    const lastName = getVal(byId('studentLastName')).trim();
+    const level = getVal(byId('studentLevel'));
+    const amount = getVal(byId('feeAmount')).trim();
 
-  function proceedToStep3(phone) {
-    // Populate confirmation
-    $('#confirmStudent').text($('#studentName').val().trim());
-    $('#confirmLevel').text($('#studentLevel option:selected').text());
-    $('#confirmPhone').text('+265 ' + phone);
+    if (!firstName) return setText(byId('step2Error'), 'Please enter the student first name');
+    if (!lastName) return setText(byId('step2Error'), 'Please enter the student last name');
+    if (!level) return setText(byId('step2Error'), 'Please select the level of study');
+    if (!amount || Number(amount) <= 0) return setText(byId('step2Error'), 'Please enter a valid amount');
+    setText(byId('step2Error'), '');
 
+    const levelSelect = byId('studentLevel');
+    const selectedOption = levelSelect?.options[levelSelect.selectedIndex];
+    setText(byId('confirmStudent'), `${firstName} ${lastName}`);
+    setText(byId('confirmLevel'), selectedOption?.text ?? '');
+    setText(byId('confirmPhone'), `+265 ${parentPhone}`);
+    setText(byId('confirmTotal'), fmtMoney(amount));
     goToStep(3);
-  }
-
-  // Parent signup → create account
-  $('#parentSignupBtn').on('click', function () {
-    var pass = $('#parentSignupPass').val();
-    var confirm = $('#parentSignupConfirm').val();
-    var error = '';
-
-    if (!pass || pass.length < 6) {
-      error = 'Password must be at least 6 characters';
-    } else if (pass !== confirm) {
-      error = 'Passwords do not match';
-    }
-
-    if (error) {
-      $('#signupStepError').text(error);
-      return;
-    }
-
-    $('#signupStepError').text('');
-
-    var registeredParents = getRegisteredParents();
-    registeredParents[parentPhone] = pass;
-    saveRegisteredParents(registeredParents);
-
-    proceedToStep3(parentPhone);
   });
 
-  // Parent login
-  $('#parentLoginBtn').on('click', function () {
-    var pass = $('#parentLoginPass').val();
-    var registeredParents = getRegisteredParents();
-    var error = '';
-
-    if (!pass) {
-      error = 'Please enter your password';
-    } else if (registeredParents[parentPhone] !== pass) {
-      error = 'Incorrect password. Please try again.';
-    }
-
-    if (error) {
-      $('#loginStepError').text(error);
-      return;
-    }
-
-    $('#loginStepError').text('');
-    proceedToStep3(parentPhone);
-  });
-
-  // ── Step 3: Make Payment ────────────────────────────
-  $('#makePaymentBtn').on('click', function () {
-    alert('Payment of ' + $('#confirmTotal').text() + ' initiated successfully! (Backend not connected yet)');
-  });
-
-  // ── Login Form ──────────────────────────────────────
-  $('#loginForm').on('submit', function (e) {
-    e.preventDefault();
-    var phone = $('#loginPhone').val().trim();
-    var password = $('#loginPassword').val();
-    var error = '';
-
-    if (!phone) {
-      error = 'Please enter your phone number';
-    } else if (phone.length < 9) {
-      error = 'Phone number must be 9 digits';
-    } else if (!password) {
-      error = 'Please enter your password';
-    } else if (password.length < 6) {
-      error = 'Password must be at least 6 characters';
-    }
-
-    if (error) {
-      $('#loginError').text(error);
-      return;
-    }
-
-    var staffAccounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
-    var account = staffAccounts[phone];
-
-    if (!account) {
-      $('#loginError').text('No account found with this phone number');
-      return;
-    }
-
-    if (account.password !== password) {
-      $('#loginError').text('Incorrect password');
-      return;
-    }
-
-    $('#loginError').text('');
-
-    // Store current session
-    localStorage.setItem('currentUser', JSON.stringify({
-      phone: phone,
-      role: account.role,
-      firstName: account.firstName,
-      lastName: account.lastName,
-      email: account.email || ''
-    }));
-
-    // Redirect based on role
-    if (account.role === 'headteacher') {
-      window.location.href = '/school/headteacher/';
-    } else if (account.role === 'accountant') {
-      window.location.href = '/school/accountant/';
-    }
-  });
-
-  // ── Headteacher Signup Form ─────────────────────────
-  $('#headteacherSignupForm').on('submit', function (e) {
-    e.preventDefault();
-    var firstName = $('#htFirstName').val().trim();
-    var lastName = $('#htLastName').val().trim();
-    var email = $('#htEmail').val().trim();
-    var phone = $('#htPhone').val().trim();
-    var password = $('#htPassword').val();
-    var confirm = $('#htConfirmPassword').val();
-    var error = '';
-
-    if (!firstName) error = 'Please enter your first name';
-    else if (!lastName) error = 'Please enter your last name';
-    else if (!email) error = 'Please enter your email';
-    else if (!phone || phone.length < 9) error = 'Please enter a valid phone number (9 digits)';
-    else if (!password || password.length < 6) error = 'Password must be at least 6 characters';
-    else if (password !== confirm) error = 'Passwords do not match';
-
-    if (error) {
-      $('#htSignupError').text(error);
-      return;
-    }
-
-    $('#htSignupError').text('');
-
-    // Save account to localStorage
-    var staffAccounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
-    staffAccounts[phone] = {
-      password: password,
-      role: 'headteacher',
-      firstName: firstName,
-      lastName: lastName,
-      email: email
-    };
-    localStorage.setItem('staffAccounts', JSON.stringify(staffAccounts));
-
-    // Store current session
-    localStorage.setItem('currentUser', JSON.stringify({
-      phone: phone,
-      role: 'headteacher',
-      firstName: firstName,
-      lastName: lastName
-    }));
-
-    window.location.href = '/school/create/';
-  });
-
-  // ── Create School Form ──────────────────────────────
-  $('#createSchoolForm').on('submit', function (e) {
-    e.preventDefault();
-    var name = $('#schoolName').val().trim();
-    var location = $('#schoolLocation').val().trim();
-    var type = $('#schoolType').val();
-    var error = '';
-
-    if (!name) error = 'Please enter the school name';
-    else if (!location) error = 'Please enter the school location';
-    else if (!type) error = 'Please select the school type';
-
-    if (error) {
-      $('#createSchoolError').text(error);
-      return;
-    }
-
-    $('#createSchoolError').text('');
-
-    // Save school to localStorage
-    localStorage.setItem('schoolInfo', JSON.stringify({
-      name: name,
-      location: location,
-      type: type
-    }));
-
-    window.location.href = '/school/headteacher/';
-  });
-
-  // ── Add Accountant Form ─────────────────────────────
-  $('#addAccountantForm').on('submit', function (e) {
-    e.preventDefault();
-    var firstName = $('#accFirstName').val().trim();
-    var lastName = $('#accLastName').val().trim();
-    var email = $('#accEmail').val().trim();
-    var phone = $('#accPhone').val().trim();
-    var error = '';
-
-    if (!firstName) error = 'Please enter the first name';
-    else if (!lastName) error = 'Please enter the last name';
-    else if (!email) error = 'Please enter the email';
-    else if (!phone || phone.length < 9) error = 'Please enter a valid phone number';
-
-    if (error) {
-      $('#addAccountantError').text(error);
-      return;
-    }
-
-    $('#addAccountantError').text('');
-
-    var defaultPassword = lastName.toLowerCase().trim() + '123';
-
-    // Save accountant account to localStorage
-    var staffAccounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
-    staffAccounts[phone] = {
-      password: defaultPassword,
-      role: 'accountant',
-      firstName: firstName,
-      lastName: lastName,
-      email: email,
-      mustChangePassword: true
-    };
-    localStorage.setItem('staffAccounts', JSON.stringify(staffAccounts));
-
-    alert('Accountant added! Default password: ' + defaultPassword);
-    window.location.href = '/school/headteacher/';
-  });
-
-  // ── Change Password Form ────────────────────────────
-  $('#changePasswordForm').on('submit', function (e) {
-    e.preventDefault();
-    var current = $('#currentPassword').val();
-    var newPass = $('#newPassword').val();
-    var confirm = $('#confirmNewPassword').val();
-    var error = '';
-
-    if (!current) error = 'Please enter your current password';
-    else if (!newPass || newPass.length < 6) error = 'New password must be at least 6 characters';
-    else if (newPass !== confirm) error = 'New passwords do not match';
-
-    if (error) {
-      $('#changePasswordError').text(error);
-      return;
-    }
-
-    $('#changePasswordError').text('');
-
-    // Update password in localStorage
-    var currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (currentUser && currentUser.phone) {
-      var staffAccounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
-      if (staffAccounts[currentUser.phone]) {
-        staffAccounts[currentUser.phone].password = newPass;
-        staffAccounts[currentUser.phone].mustChangePassword = false;
-        localStorage.setItem('staffAccounts', JSON.stringify(staffAccounts));
+  // ── Step 3: Confirm & Pay ───────────────────────────
+  on(byId('makePaymentBtn'), 'click', async () => {
+    const btn = byId('makePaymentBtn');
+    btn.disabled = true;
+    try {
+      const result = await apiFetch(API_ROUTES.paymentInitiate, {
+        method: 'POST',
+        body: {
+          school: selectedSchoolId,
+          student_first_name: getVal(byId('studentFirstName')).trim(),
+          student_last_name: getVal(byId('studentLastName')).trim(),
+          grade: getVal(byId('studentLevel')),
+          amount: getVal(byId('feeAmount')).trim(),
+          phone_number: parentPhone,
+          school_id: 1
+        },
+      });
+      if (result?.checkout_url) {
+        window.location.href = result.checkout_url;
+      } else {
+        alert('Payment could not be started. Please try again.');
+        btn.disabled = false;
       }
+    } catch (err) {
+      alert(`Payment failed: ${err.message}`);
+      btn.disabled = false;
     }
+  });
+}
 
-    alert('Password changed successfully!');
-    window.location.href = '/school/accountant/';
+
+function initStaffAuthForms() {
+  on(byId('loginForm'), 'submit', async (e) => {
+    e.preventDefault();
+    const phone = getVal(byId('loginPhone')).trim();
+    const password = getVal(byId('loginPassword'));
+
+    if (!phone || phone.length < 9) return setText(byId('loginError'), 'Please enter a valid phone number');
+    if (!password || password.length < 6) return setText(byId('loginError'), 'Password must be at least 6 characters');
+
+    try {
+      
+      const { role } = await apiFetch(API_ROUTES.login, { method: 'POST', body: { phone, password } });
+      setText(byId('loginError'), '');
+      window.location.href = role === 'headteacher' ? '/school/headteacher/' : '/school/accountant/';
+    } catch (err) {
+      setText(byId('loginError'), err.message);
+    }
   });
 
-  // ── Dashboard SPA ──────────────────────────────────
-  if ($('#panelContainer').length) {
+  on(byId('headteacherSignupForm'), 'submit', async (e) => {
+    e.preventDefault();
+    const firstName = getVal(byId('htFirstName')).trim();
+    const lastName = getVal(byId('htLastName')).trim();
+    const email = getVal(byId('htEmail')).trim();
+    const phone = getVal(byId('htPhone')).trim();
+    const password = getVal(byId('htPassword'));
+    const confirm = getVal(byId('htConfirmPassword'));
 
-    var currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    var role = currentUser.role === 'accountant' ? 'ac' : 'ht';
-    var loadedPanels = {};
-    var editingAccPhone = null;
+    if (!firstName || !lastName || !email) return setText(byId('htSignupError'), 'Please fill in all fields');
+    if (!phone || phone.length < 9) return setText(byId('htSignupError'), 'Please enter a valid phone number (9 digits)');
+    if (!password || password.length < 6) return setText(byId('htSignupError'), 'Password must be at least 6 characters');
+    if (password !== confirm) return setText(byId('htSignupError'), 'Passwords do not match');
 
-    // Seed transactions
-    if (!localStorage.getItem('transactions')) {
-      localStorage.setItem('transactions', JSON.stringify([
-        { id: "RCP20260723-001", student: "Chifundo Banda", level: "Form 3", amount: 120000, date: "2026-07-23", method: "Airtel Money", status: "Paid" },
-        { id: "RCP20260723-002", student: "Grace Mlenga", level: "Form 1", amount: 60000, date: "2026-07-23", method: "TNM Mpamba", status: "Paid" },
-        { id: "RCP20260722-003", student: "James Phiri", level: "Form 4", amount: 120000, date: "2026-07-22", method: "National Bank", status: "Paid" },
-        { id: "RCP20260722-004", student: "Mary Kamwendo", level: "Form 2", amount: 45000, date: "2026-07-22", method: "Airtel Money", status: "Partial" },
-        { id: "RCP20260721-005", student: "Peter Gondwe", level: "Form 3", amount: 120000, date: "2026-07-21", method: "TNM Mpamba", status: "Paid" },
-        { id: "RCP20260721-006", student: "Linda Mwale", level: "Form 1", amount: 120000, date: "2026-07-21", method: "National Bank", status: "Paid" },
-        { id: "RCP20260720-007", student: "Thoko Chips", level: "Form 4", amount: 80000, date: "2026-07-20", method: "Airtel Money", status: "Pending" },
-        { id: "RCP20260720-008", student: "Fiona Banda", level: "Form 2", amount: 120000, date: "2026-07-20", method: "Airtel Money", status: "Paid" },
-        { id: "RCP20260719-009", student: "David Mwale", level: "Form 3", amount: 60000, date: "2026-07-19", method: "TNM Mpamba", status: "Paid" },
-        { id: "RCP20260718-010", student: "Ruth Banda", level: "Form 1", amount: 120000, date: "2026-07-18", method: "National Bank", status: "Paid" },
-        { id: "RCP20260717-011", student: "Isaac Mwale", level: "Form 4", amount: 45000, date: "2026-07-17", method: "Airtel Money", status: "Partial" },
-        { id: "RCP20260716-012", student: "Sarah Phiri", level: "Form 2", amount: 120000, date: "2026-07-16", method: "TNM Mpamba", status: "Paid" },
-        { id: "RCP20260715-013", student: "Kondwani Banda", level: "Form 3", amount: 120000, date: "2026-07-15", method: "Airtel Money", status: "Paid" },
-        { id: "RCP20260714-014", student: "Mphatso Mwale", level: "Form 1", amount: 60000, date: "2026-07-14", method: "National Bank", status: "Pending" },
-        { id: "RCP20260713-015", student: "Tionge Phiri", level: "Form 2", amount: 120000, date: "2026-07-13", method: "TNM Mpamba", status: "Paid" }
-      ]));
+    try {
+      // Server hashes the password and rejects duplicate phone numbers.
+      await apiFetch(API_ROUTES.headteacherSignup, {
+        method: 'POST',
+        body: { firstName, lastName, email, phone, password },
+      });
+      setText(byId('htSignupError'), '');
+      window.location.href = '/school/create/';
+    } catch (err) {
+      setText(byId('htSignupError'), err.message);
+    }
+  });
+
+  on(byId('createSchoolForm'), 'submit', async (e) => {
+    e.preventDefault();
+    const name = getVal(byId('schoolName')).trim();
+    const location = getVal(byId('schoolLocation')).trim();
+    const type = getVal(byId('schoolType'));
+
+    if (!name) return setText(byId('createSchoolError'), 'Please enter the school name');
+    if (!location) return setText(byId('createSchoolError'), 'Please enter the school location');
+    if (!type) return setText(byId('createSchoolError'), 'Please select the school type');
+
+    try {
+      await apiFetch(API_ROUTES.schools, { method: 'POST', body: { name, location, type } });
+      setText(byId('createSchoolError'), '');
+      window.location.href = '/school/headteacher/';
+    } catch (err) {
+      setText(byId('createSchoolError'), err.message);
+    }
+  });
+
+  on(byId('addAccountantForm'), 'submit', async (e) => {
+    e.preventDefault();
+    const firstName = getVal(byId('accFirstName')).trim();
+    const lastName = getVal(byId('accLastName')).trim();
+    const email = getVal(byId('accEmail')).trim();
+    const phone = getVal(byId('accPhone')).trim();
+
+    if (!firstName || !lastName || !email) return setText(byId('addAccountantError'), 'Please fill in all fields');
+    if (!phone || phone.length < 9) return setText(byId('addAccountantError'), 'Please enter a valid phone number');
+
+    try {
+      // Server generates the temporary password and sends it via SMS/email —
+      // it should never be echoed back to the browser in plaintext.
+      await apiFetch(API_ROUTES.accountants, { method: 'POST', body: { firstName, lastName, email, phone } });
+      setText(byId('addAccountantError'), '');
+      alert('Accountant added! Their login details have been sent to them.');
+      window.location.href = '/school/headteacher/';
+    } catch (err) {
+      setText(byId('addAccountantError'), err.message);
+    }
+  });
+
+  on(byId('changePasswordForm'), 'submit', async (e) => {
+    e.preventDefault();
+    const current = getVal(byId('currentPassword'));
+    const newPass = getVal(byId('newPassword'));
+    const confirm = getVal(byId('confirmNewPassword'));
+
+    if (!current) return setText(byId('changePasswordError'), 'Please enter your current password');
+    if (!newPass || newPass.length < 6) return setText(byId('changePasswordError'), 'New password must be at least 6 characters');
+    if (newPass !== confirm) return setText(byId('changePasswordError'), 'New passwords do not match');
+
+    try {
+      // Server verifies currentPassword against the hash before accepting newPassword.
+      await apiFetch(API_ROUTES.changePassword, { method: 'POST', body: { currentPassword: current, newPassword: newPass } });
+      alert('Password changed successfully!');
+      window.location.href = '/school/accountant/';
+    } catch (err) {
+      setText(byId('changePasswordError'), err.message);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DASHBOARD SPA (headteacher + accountant panels)
+// ═══════════════════════════════════════════════════════════
+function initDashboardSpa() {
+  if (!byId('panelContainer')) return;
+
+  let role = null; // 'ht' | 'ac' — resolved from the server, not localStorage
+  let currentUser = null;
+  const loadedPanels = {};
+  let editingAccId = null;
+
+  const loadPanel = async (key) => {
+    if (loadedPanels[key]) return showPanel(key, true);
+
+    const res = await fetch(`/static/html/${role}_${key}.html`);
+    const html = await res.text();
+    byId('panelContainer').innerHTML = html;
+    loadedPanels[key] = true;
+    showPanel(key, true);
+    await populatePanel(key);
+  };
+
+  const showPanel = (key, doPopulate) => {
+    removeClassAll('.sidebar-item', 'active');
+    qs(`.sidebar-item[href="#${key}"]`)?.classList.add('active');
+    if (doPopulate && loadedPanels[key]) populatePanel(key);
+  };
+
+  const populatePanel = async (key) => {
+    const panels = role === 'ht'
+      ? { dashboard: populateHtDashboard, school: populateHtSchool, accountants: populateHtAccountants,
+          transactions: populateHtTransactions, students: populateHtStudents, profile: populateHtProfile }
+      : { dashboard: populateAcDashboard, transactions: populateAcTransactions,
+          students: populateAcStudents, profile: populateAcProfile };
+    await panels[key]?.();
+  };
+
+  // ── HEADTEACHER PANELS ──────────────────────────────
+  const populateHtDashboard = async () => {
+    const data = await apiFetch(API_ROUTES.dashboardHt);
+    setText(byId('htWelcomeName'), `${data.user.firstName} ${data.user.lastName}`);
+    setText(byId('htSchoolName'), data.school?.name ?? '—');
+    setText(byId('htSchoolLocation'), data.school?.location ?? '—');
+    setText(byId('htStatRevenue'), fmtMoney(data.stats.revenue));
+    setText(byId('htStatPaid'), data.stats.paidCount);
+    setText(byId('htStatPending'), data.stats.pendingCount);
+    setText(byId('htStatTotal'), data.stats.totalStudents);
+
+    const html = data.recentTransactions.map((t) => `
+      <tr><td>${t.student}</td><td>${t.level}</td><td>${fmtMoney(t.amount)}</td>
+      <td>${fmtDate(t.date)}</td><td>${methodIcon(t.method)}</td><td>${statusBadge(t.status)}</td></tr>
+    `).join('');
+    const el = byId('htRecentTransactions');
+    if (el) el.innerHTML = html;
+  };
+
+  const populateHtSchool = async () => {
+    const school = await apiFetch(API_ROUTES.schoolMine);
+    setText(byId('schoolDisplayName'), school.name || 'Not set');
+    setText(byId('schoolDisplayLocation'), school.location || 'Not set');
+    setText(byId('schoolDisplayType'), school.type || 'Not set');
+    setVal(byId('schoolName'), school.name || '');
+    setVal(byId('schoolLocation'), school.location || '');
+    setVal(byId('schoolType'), school.type || '');
+    show(byId('schoolDisplay'));
+    hide(byId('schoolEditForm'));
+    setText(byId('schoolError'), '');
+
+    on(byId('schoolEditBtn'), 'click', () => { hide(byId('schoolDisplay')); show(byId('schoolEditForm')); });
+    on(byId('schoolCancelBtn'), 'click', async () => {
+      const s = await apiFetch(API_ROUTES.schoolMine);
+      setVal(byId('schoolName'), s.name || '');
+      setVal(byId('schoolLocation'), s.location || '');
+      setVal(byId('schoolType'), s.type || '');
+      show(byId('schoolDisplay'));
+      hide(byId('schoolEditForm'));
+      setText(byId('schoolError'), '');
+    });
+    on(byId('schoolSaveBtn'), 'click', async () => {
+      const name = getVal(byId('schoolName')).trim();
+      const location = getVal(byId('schoolLocation')).trim();
+      const type = getVal(byId('schoolType'));
+      if (!name || !location || !type) return setText(byId('schoolError'), 'Please fill in all fields');
+
+      try {
+        const updated = await apiFetch(API_ROUTES.schoolMine, { method: 'PATCH', body: { name, location, type } });
+        setText(byId('schoolError'), '');
+        setText(byId('schoolDisplayName'), updated.name);
+        setText(byId('schoolDisplayLocation'), updated.location);
+        setText(byId('schoolDisplayType'), updated.type);
+        show(byId('schoolDisplay'));
+        hide(byId('schoolEditForm'));
+      } catch (err) {
+        setText(byId('schoolError'), err.message);
+      }
+    });
+  };
+
+  const populateHtAccountants = async () => {
+    const accountants = await apiFetch(API_ROUTES.accountants);
+    const tableEl = byId('accountantTable');
+    if (tableEl) {
+      tableEl.innerHTML = accountants.map((a) => `
+        <tr>
+          <td>${a.firstName} ${a.lastName}</td>
+          <td>${a.email || '—'}</td>
+          <td>+265 ${a.phone}</td>
+          <td>${statusBadge(a.status)}</td>
+          <td>
+            <button class="btn btn-sm btn-outline acc-edit-btn" data-id="${a.id}" style="margin-right:6px;"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn btn-sm btn-outline acc-delete-btn" data-id="${a.id}" data-name="${a.firstName} ${a.lastName}"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
     }
 
-    // Seed students
-    if (!localStorage.getItem('students')) {
-      localStorage.setItem('students', JSON.stringify([
-        { name: "Chifundo Banda", level: "Form 3", phone: "999123456", amount: 120000, date: "2026-07-23", term: "Term 2" },
-        { name: "Grace Mlenga", level: "Form 1", phone: "888234567", amount: 60000, date: "2026-07-23", term: "Term 2" },
-        { name: "James Phiri", level: "Form 4", phone: "777345678", amount: 120000, date: "2026-07-22", term: "Term 2" },
-        { name: "Mary Kamwendo", level: "Form 2", phone: "666456789", amount: 45000, date: "2026-07-22", term: "Term 2" },
-        { name: "Peter Gondwe", level: "Form 3", phone: "555567890", amount: 120000, date: "2026-07-21", term: "Term 2" },
-        { name: "Linda Mwale", level: "Form 1", phone: "444678901", amount: 120000, date: "2026-07-21", term: "Term 2" },
-        { name: "Thoko Chips", level: "Form 4", phone: "333789012", amount: 80000, date: "2026-07-20", term: "Term 2" },
-        { name: "Fiona Banda", level: "Form 2", phone: "222890123", amount: 120000, date: "2026-07-20", term: "Term 2" },
-        { name: "David Mwale", level: "Form 3", phone: "111901234", amount: 60000, date: "2026-07-19", term: "Term 1" },
-        { name: "Ruth Banda", level: "Form 1", phone: "998012345", amount: 120000, date: "2026-07-18", term: "Term 1" },
-        { name: "Isaac Mwale", level: "Form 4", phone: "887123456", amount: 45000, date: "2026-07-17", term: "Term 1" },
-        { name: "Sarah Phiri", level: "Form 2", phone: "776234567", amount: 120000, date: "2026-07-16", term: "Term 1" }
-      ]));
-    }
+    on(byId('addAccountantBtn'), 'click', () => {
+      editingAccId = null;
+      setText(byId('accountantModalTitle'), 'Add Accountant');
+      ['accModalFirstName', 'accModalLastName', 'accModalEmail', 'accModalPhone'].forEach((id) => setVal(byId(id), ''));
+      setText(byId('accModalError'), '');
+      addClassAll('#accountantModal, #accountantModalOverlay', 'open');
+    });
 
-    // ── Hash Router ──────────────────────────────────
-    function loadPanel(key) {
-      if (loadedPanels[key]) {
-        showPanel(key, true);
+    on(tableEl, 'click', (e) => {
+      const editBtn = e.target.closest('.acc-edit-btn');
+      if (editBtn) {
+        editingAccId = editBtn.dataset.id;
+        const a = accountants.find((acc) => String(acc.id) === editingAccId);
+        setText(byId('accountantModalTitle'), 'Edit Accountant');
+        setVal(byId('accModalFirstName'), a?.firstName || '');
+        setVal(byId('accModalLastName'), a?.lastName || '');
+        setVal(byId('accModalEmail'), a?.email || '');
+        setVal(byId('accModalPhone'), a?.phone || '');
+        setText(byId('accModalError'), '');
+        addClassAll('#accountantModal, #accountantModalOverlay', 'open');
         return;
       }
-      $.get('/static/html/' + role + '_' + key + '.html', function(html) {
-        $('#panelContainer').html(html);
-        loadedPanels[key] = true;
-        showPanel(key, true);
-        populatePanel(key);
-      });
-    }
-
-    function showPanel(key, doPopulate) {
-      $('.sidebar-item').removeClass('active');
-      $('.sidebar-item[href="#' + key + '"]').addClass('active');
-      if (doPopulate && loadedPanels[key]) {
-        populatePanel(key);
+      const delBtn = e.target.closest('.acc-delete-btn');
+      if (delBtn) {
+        setText(byId('confirmDeleteName'), delBtn.dataset.name);
+        byId('confirmDeleteBtn').dataset.id = delBtn.dataset.id;
+        addClassAll('#confirmModal, #confirmModalOverlay', 'open');
       }
-    }
-
-    function populatePanel(key) {
-      if (role === 'ht') {
-        if (key === 'dashboard') populateHtDashboard();
-        else if (key === 'school') populateHtSchool();
-        else if (key === 'accountants') populateHtAccountants();
-        else if (key === 'transactions') populateHtTransactions();
-        else if (key === 'students') populateHtStudents();
-        else if (key === 'profile') populateHtProfile();
-      } else {
-        if (key === 'dashboard') populateAcDashboard();
-        else if (key === 'transactions') populateAcTransactions();
-        else if (key === 'students') populateAcStudents();
-        else if (key === 'profile') populateAcProfile();
-      }
-    }
-
-    function fmtMoney(amount) {
-      return 'MWK ' + Number(amount).toLocaleString();
-    }
-
-    function fmtDate(d) {
-      var parts = d.split('-');
-      var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      return parseInt(parts[2]) + ' ' + months[parseInt(parts[1])-1] + ' ' + parts[0];
-    }
-
-    $(window).on('hashchange', function() {
-      var key = location.hash.replace('#', '') || 'dashboard';
-      loadPanel(key);
     });
 
-    // Check if accountant must change password
-    if (role === 'ac' && currentUser.phone) {
-      var accounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
-      if (accounts[currentUser.phone] && accounts[currentUser.phone].mustChangePassword) {
-        location.hash = 'profile';
-      }
-    }
-
-    var initialKey = location.hash.replace('#', '') || 'dashboard';
-    loadPanel(initialKey);
-
-    // ── Sidebar click ──────────────────────────────
-    $('.sidebar-nav').on('click', '.sidebar-item', function(e) {
-      e.preventDefault();
-      var hash = $(this).attr('href').replace('#', '');
-      location.hash = hash;
-    });
-
-    // ── Logout ─────────────────────────────────────
-    $('#logoutLink').on('click', function(e) {
-      e.preventDefault();
-      localStorage.removeItem('currentUser');
-      window.location.href = '/';
-    });
-
-    // ── Modal Close ────────────────────────────────
-    $(document).on('click', '.modal-close-btn', function() {
-      $('.modal-overlay, .modal').removeClass('open');
-    });
-    $(document).on('click', '.modal-overlay', function() {
-      $('.modal-overlay, .modal').removeClass('open');
-    });
-
-    // ── Helper: Render Badge ───────────────────────
-    function statusBadge(status) {
-      if (status === 'Paid' || status === 'Active' || status === 'Verified') {
-        return '<span class="badge badge-success">' + status + '</span>';
-      } else if (status === 'Partial' || status === 'Pending') {
-        return '<span class="badge badge-pending">' + status + '</span>';
-      }
-      return '<span class="badge badge-failed">' + status + '</span>';
-    }
-
-    function methodIcon(method) {
-      if (method === 'Airtel Money') return '<i class="fa-solid fa-mobile-screen-button method-icon-airtel"></i> Airtel';
-      if (method === 'TNM Mpamba') return '<i class="fa-solid fa-mobile-screen-button method-icon-tnm"></i> TNM';
-      if (method === 'National Bank') return '<i class="fa-solid fa-building-columns method-icon-bank"></i> NB';
-      return method;
-    }
-
-    // ════════════════════════════════════════════════
-    //  HEADTEACHER PANELS
-    // ════════════════════════════════════════════════
-
-    function populateHtDashboard() {
-      var user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      var school = JSON.parse(localStorage.getItem('schoolInfo') || '{}');
-      var txns = JSON.parse(localStorage.getItem('transactions') || '[]');
-
-      $('#htWelcomeName').text((user.firstName || '') + ' ' + (user.lastName || ''));
-      $('#htSchoolName').text(school.name || '—');
-      $('#htSchoolLocation').text(school.location || '—');
-
-      var totalRevenue = 0, totalPaid = 0, totalPending = 0;
-      txns.forEach(function(t) {
-        totalRevenue += t.amount;
-        if (t.status === 'Paid') totalPaid++;
-        else if (t.status === 'Pending') totalPending++;
-      });
-
-      $('#htStatRevenue').text(fmtMoney(totalRevenue));
-      $('#htStatPaid').text(totalPaid);
-      $('#htStatPending').text(totalPending);
-
-      var allStudents = JSON.parse(localStorage.getItem('students') || '[]');
-      // Count unique students as total
-      var uniqueNames = {};
-      allStudents.forEach(function(s) { uniqueNames[s.name] = true; });
-      $('#htStatTotal').text(Object.keys(uniqueNames).length);
-
-      // Recent 5 transactions
-      var recent = txns.slice(-5).reverse();
-      var html = '';
-      recent.forEach(function(t) {
-        html += '<tr><td>' + t.student + '</td><td>' + t.level + '</td><td>' + fmtMoney(t.amount) + '</td><td>' + fmtDate(t.date) + '</td><td>' + methodIcon(t.method) + '</td><td>' + statusBadge(t.status) + '</td></tr>';
-      });
-      $('#htRecentTransactions').html(html);
-    }
-
-    function populateHtSchool() {
-      var school = JSON.parse(localStorage.getItem('schoolInfo') || '{}');
-      $('#schoolDisplayName').text(school.name || 'Not set');
-      $('#schoolDisplayLocation').text(school.location || 'Not set');
-      $('#schoolDisplayType').text(school.type || 'Not set');
-      $('#schoolName').val(school.name || '');
-      $('#schoolLocation').val(school.location || '');
-      $('#schoolType').val(school.type || '');
-      $('#schoolDisplay').show();
-      $('#schoolEditForm').hide();
-      $('#schoolError').text('');
-
-      $('#schoolEditBtn').off('click').on('click', function() {
-        $('#schoolDisplay').hide();
-        $('#schoolEditForm').show();
-      });
-      $('#schoolCancelBtn').off('click').on('click', function() {
-        var s = JSON.parse(localStorage.getItem('schoolInfo') || '{}');
-        $('#schoolName').val(s.name || '');
-        $('#schoolLocation').val(s.location || '');
-        $('#schoolType').val(s.type || '');
-        $('#schoolDisplay').show();
-        $('#schoolEditForm').hide();
-        $('#schoolError').text('');
-      });
-      $('#schoolSaveBtn').off('click').on('click', function() {
-        var name = $('#schoolName').val().trim();
-        var location = $('#schoolLocation').val().trim();
-        var type = $('#schoolType').val();
-        if (!name || !location || !type) {
-          $('#schoolError').text('Please fill in all fields');
-          return;
-        }
-        $('#schoolError').text('');
-        localStorage.setItem('schoolInfo', JSON.stringify({ name: name, location: location, type: type }));
-        $('#schoolDisplayName').text(name);
-        $('#schoolDisplayLocation').text(location);
-        $('#schoolDisplayType').text(type);
-        $('#schoolDisplay').show();
-        $('#schoolEditForm').hide();
-      });
-    }
-
-    function populateHtAccountants() {
-      var accounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
-      var html = '';
-      Object.keys(accounts).forEach(function(phone) {
-        if (accounts[phone].role !== 'accountant') return;
-        var a = accounts[phone];
-        var status = a.mustChangePassword ? 'Pending' : 'Active';
-        html += '<tr>' +
-          '<td>' + a.firstName + ' ' + a.lastName + '</td>' +
-          '<td>' + (a.email || '—') + '</td>' +
-          '<td>+265 ' + phone + '</td>' +
-          '<td>' + statusBadge(status) + '</td>' +
-          '<td>' +
-            '<button class="btn btn-sm btn-outline acc-edit-btn" data-phone="' + phone + '" style="margin-right:6px;"><i class="fa-solid fa-pen"></i></button>' +
-            '<button class="btn btn-sm btn-outline acc-delete-btn" data-phone="' + phone + '" data-name="' + a.firstName + ' ' + a.lastName + '"><i class="fa-solid fa-trash"></i></button>' +
-          '</td>' +
-        '</tr>';
-      });
-      $('#accountantTable').html(html);
-
-      // Add Accountant
-      $('#addAccountantBtn').off('click').on('click', function() {
-        editingAccPhone = null;
-        $('#accountantModalTitle').text('Add Accountant');
-        $('#accModalFirstName, #accModalLastName, #accModalEmail, #accModalPhone').val('');
-        $('#accModalError').text('');
-        $('#accountantModal, #accountantModalOverlay').addClass('open');
-      });
-
-      // Edit
-      $(document).off('click', '.acc-edit-btn').on('click', '.acc-edit-btn', function() {
-        editingAccPhone = $(this).data('phone');
-        var a = accounts[editingAccPhone];
-        $('#accountantModalTitle').text('Edit Accountant');
-        $('#accModalFirstName').val(a.firstName || '');
-        $('#accModalLastName').val(a.lastName || '');
-        $('#accModalEmail').val(a.email || '');
-        $('#accModalPhone').val(editingAccPhone);
-        $('#accModalError').text('');
-        $('#accountantModal, #accountantModalOverlay').addClass('open');
-      });
-
-      // Delete
-      $(document).off('click', '.acc-delete-btn').on('click', '.acc-delete-btn', function() {
-        var phone = $(this).data('phone');
-        var name = $(this).data('name');
-        $('#confirmDeleteName').text(name);
-        $('#confirmDeleteBtn').data('phone', phone);
-        $('#confirmModal, #confirmModalOverlay').addClass('open');
-      });
-    }
-
-    // Accountant modal save
-    $('#accModalSaveBtn').off('click').on('click', function() {
-      var firstName = $('#accModalFirstName').val().trim();
-      var lastName = $('#accModalLastName').val().trim();
-      var email = $('#accModalEmail').val().trim();
-      var phone = $('#accModalPhone').val().trim();
+    on(byId('accModalSaveBtn'), 'click', async () => {
+      const firstName = getVal(byId('accModalFirstName')).trim();
+      const lastName = getVal(byId('accModalLastName')).trim();
+      const email = getVal(byId('accModalEmail')).trim();
+      const phone = getVal(byId('accModalPhone')).trim();
 
       if (!firstName || !lastName || !email || !phone || phone.length < 9) {
-        $('#accModalError').text('Please fill in all fields correctly');
-        return;
+        return setText(byId('accModalError'), 'Please fill in all fields correctly');
       }
 
-      $('#accModalError').text('');
-      var accounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
-
-      if (editingAccPhone) {
-        // Update existing
-        var existing = accounts[editingAccPhone];
-        delete accounts[editingAccPhone];
-        accounts[phone] = {
-          password: existing.password,
-          role: 'accountant',
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          mustChangePassword: existing.mustChangePassword
-        };
-      } else {
-        // Add new
-        if (accounts[phone]) {
-          $('#accModalError').text('An account with this phone already exists');
-          return;
+      try {
+        if (editingAccId) {
+          await apiFetch(API_ROUTES.accountantById(editingAccId), { method: 'PATCH', body: { firstName, lastName, email, phone } });
+        } else {
+          await apiFetch(API_ROUTES.accountants, { method: 'POST', body: { firstName, lastName, email, phone } });
+          alert('Accountant added! Their login details have been sent to them.');
         }
-        accounts[phone] = {
-          password: lastName.toLowerCase().trim() + '123',
-          role: 'accountant',
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          mustChangePassword: true
-        };
-        alert('Default password: ' + lastName.toLowerCase().trim() + '123');
+        setText(byId('accModalError'), '');
+        removeClassAll('#accountantModal, #accountantModalOverlay', 'open');
+        await populateHtAccountants();
+      } catch (err) {
+        setText(byId('accModalError'), err.message);
       }
-
-      localStorage.setItem('staffAccounts', JSON.stringify(accounts));
-      $('#accountantModal, #accountantModalOverlay').removeClass('open');
-      populateHtAccountants();
     });
 
-    // Confirm delete
-    $('#confirmDeleteBtn').off('click').on('click', function() {
-      var phone = $(this).data('phone');
-      var accounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
-      delete accounts[phone];
-      localStorage.setItem('staffAccounts', JSON.stringify(accounts));
-      $('#confirmModal, #confirmModalOverlay').removeClass('open');
-      populateHtAccountants();
+    on(byId('confirmDeleteBtn'), 'click', async function () {
+      try {
+        await apiFetch(API_ROUTES.accountantById(this.dataset.id), { method: 'DELETE' });
+        removeClassAll('#confirmModal, #confirmModalOverlay', 'open');
+        await populateHtAccountants();
+      } catch (err) {
+        alert(`Couldn't delete accountant: ${err.message}`);
+      }
+    });
+  };
+
+  const renderTransactionsTable = (tableEl, txns) => {
+    if (!tableEl) return;
+    tableEl.innerHTML = txns.map((t) => `
+      <tr><td>${t.id}</td><td>${t.student}</td><td>${t.level}</td><td>${fmtMoney(t.amount)}</td>
+      <td>${methodIcon(t.method)}</td><td>${fmtDate(t.date)}</td><td>${statusBadge(t.status)}</td></tr>
+    `).join('');
+  };
+
+  const renderStudentsTable = (tableEl, students) => {
+    if (!tableEl) return;
+    tableEl.innerHTML = students.map((s) => `
+      <tr><td>${s.name}</td><td>${s.level}</td><td>+265 ${s.phone}</td>
+      <td>${fmtMoney(s.amount)}</td><td>${fmtDate(s.date)}</td><td>${s.term}</td></tr>
+    `).join('');
+  };
+
+  const populateHtTransactions = async () => {
+    const load = async () => {
+      const params = new URLSearchParams({
+        from: getVal(byId('txnFilterFrom')),
+        to: getVal(byId('txnFilterTo')),
+      });
+      const txns = await apiFetch(`${API_ROUTES.transactions}?${params}`);
+      renderTransactionsTable(byId('transactionTable'), txns);
+    };
+    setVal(byId('txnFilterFrom'), '');
+    setVal(byId('txnFilterTo'), '');
+    on(byId('txnFilterApply'), 'click', load);
+    on(byId('txnFilterReset'), 'click', () => {
+      setVal(byId('txnFilterFrom'), '');
+      setVal(byId('txnFilterTo'), '');
+      load();
+    });
+    await load();
+  };
+
+  const populateHtStudents = async () => {
+    const load = async () => {
+      const params = new URLSearchParams({
+        from: getVal(byId('studentFilterFrom')),
+        to: getVal(byId('studentFilterTo')),
+        term: getVal(byId('studentFilterTerm')) || 'all',
+      });
+      const students = await apiFetch(`${API_ROUTES.students}?${params}`);
+      renderStudentsTable(byId('studentTable'), students);
+    };
+    setVal(byId('studentFilterFrom'), '');
+    setVal(byId('studentFilterTo'), '');
+    setVal(byId('studentFilterTerm'), 'all');
+    on(byId('studentFilterApply'), 'click', load);
+    on(byId('studentFilterReset'), 'click', () => {
+      setVal(byId('studentFilterFrom'), '');
+      setVal(byId('studentFilterTo'), '');
+      setVal(byId('studentFilterTerm'), 'all');
+      load();
+    });
+    on(byId('exportPdfBtn'), 'click', () => window.print());
+    await load();
+  };
+
+  const populateProfileShared = async (prefix) => {
+    const user = await apiFetch(API_ROUTES.profile);
+    setVal(byId(`${prefix}FirstName`), user.firstName || '');
+    setVal(byId(`${prefix}LastName`), user.lastName || '');
+    setVal(byId(`${prefix}Email`), user.email || '');
+    setVal(byId(`${prefix}Phone`), user.phone || '');
+    setText(byId(`${prefix}Error`), '');
+    setText(byId(`${prefix}PasswordError`), '');
+
+    on(byId(`${prefix}SaveBtn`), 'click', async () => {
+      const firstName = getVal(byId(`${prefix}FirstName`)).trim();
+      const lastName = getVal(byId(`${prefix}LastName`)).trim();
+      const email = getVal(byId(`${prefix}Email`)).trim();
+      const phone = getVal(byId(`${prefix}Phone`)).trim();
+      if (!firstName || !lastName || !email || !phone || phone.length < 9) {
+        return setText(byId(`${prefix}Error`), 'Please fill in all fields correctly');
+      }
+      try {
+        await apiFetch(API_ROUTES.profile, { method: 'PATCH', body: { firstName, lastName, email, phone } });
+        setText(byId(`${prefix}Error`), '');
+        alert('Profile updated!');
+      } catch (err) {
+        setText(byId(`${prefix}Error`), err.message);
+      }
     });
 
-    function populateHtTransactions() {
-      renderHtTransactions();
-      $('#txnFilterFrom, #txnFilterTo').val('');
-      $('#txnFilterApply').off('click').on('click', function() { renderHtTransactions(true); });
-      $('#txnFilterReset').off('click').on('click', function() {
-        $('#txnFilterFrom, #txnFilterTo').val('');
-        renderHtTransactions(false);
-      });
-    }
+    on(byId(`${prefix}ChangePasswordBtn`), 'click', async () => {
+      const current = getVal(byId(`${prefix}CurrentPassword`));
+      const newPass = getVal(byId(`${prefix}NewPassword`));
+      const confirm = getVal(byId(`${prefix}ConfirmPassword`));
+      if (!current) return setText(byId(`${prefix}PasswordError`), 'Please enter current password');
+      if (!newPass || newPass.length < 6) return setText(byId(`${prefix}PasswordError`), 'New password must be at least 6 characters');
+      if (newPass !== confirm) return setText(byId(`${prefix}PasswordError`), 'Passwords do not match');
 
-    function renderHtTransactions(filter) {
-      var txns = JSON.parse(localStorage.getItem('transactions') || '[]');
-      if (filter) {
-        var from = $('#txnFilterFrom').val();
-        var to = $('#txnFilterTo').val();
-        if (from) txns = txns.filter(function(t) { return t.date >= from; });
-        if (to) txns = txns.filter(function(t) { return t.date <= to; });
+      try {
+        await apiFetch(API_ROUTES.changePassword, { method: 'POST', body: { currentPassword: current, newPassword: newPass } });
+        setText(byId(`${prefix}PasswordError`), '');
+        alert('Password changed!');
+        [`${prefix}CurrentPassword`, `${prefix}NewPassword`, `${prefix}ConfirmPassword`].forEach((id) => setVal(byId(id), ''));
+      } catch (err) {
+        setText(byId(`${prefix}PasswordError`), err.message);
       }
-      var html = '';
-      txns.reverse().forEach(function(t) {
-        html += '<tr><td>' + t.id + '</td><td>' + t.student + '</td><td>' + t.level + '</td><td>' + fmtMoney(t.amount) + '</td><td>' + methodIcon(t.method) + '</td><td>' + fmtDate(t.date) + '</td><td>' + statusBadge(t.status) + '</td></tr>';
-      });
-      $('#transactionTable').html(html);
+    });
+  };
+
+  const populateHtProfile = () => populateProfileShared('profile');
+
+  // ── ACCOUNTANT PANELS ───────────────────────────────
+  const populateAcDashboard = async () => {
+    const data = await apiFetch(API_ROUTES.dashboardAc);
+    setText(byId('acWelcomeName'), `${data.user.firstName} ${data.user.lastName}`);
+    setText(byId('acSchoolName'), data.school?.name ?? '—');
+    setText(byId('acSchoolLocation'), data.school?.location ?? '—');
+    setText(byId('acStatToday'), fmtMoney(data.stats.todayTotal));
+    setText(byId('acStatTxnCount'), data.stats.todayCount);
+    setText(byId('acStatPending'), data.stats.pendingCount);
+    setText(byId('acStatMonthly'), fmtMoney(data.stats.monthTotal));
+
+    const outstandingEl = byId('acOutstandingList');
+    if (outstandingEl) {
+      outstandingEl.innerHTML = data.outstanding.map((o) => {
+        const initials = o.name.split(' ').map((w) => w[0]).join('');
+        return `<div class="outstanding-item"><div class="outstanding-avatar">${initials}</div>
+          <div class="outstanding-info"><strong>${o.name}</strong>
+          <small>${o.level} — Owes ${fmtMoney(o.owes)}</small></div>
+          <span class="badge badge-failed">Overdue</span></div>`;
+      }).join('');
     }
 
-    function populateHtStudents() {
-      renderHtStudents();
-      $('#studentFilterFrom, #studentFilterTo').val('');
-      $('#studentFilterTerm').val('all');
-      $('#studentFilterApply').off('click').on('click', function() { renderHtStudents(true); });
-      $('#studentFilterReset').off('click').on('click', function() {
-        $('#studentFilterFrom, #studentFilterTo').val('');
-        $('#studentFilterTerm').val('all');
-        renderHtStudents(false);
+    const maxDay = Math.max(...data.weeklyChart, 1);
+    qsAll('#acChartBars .chart-bar').forEach((bar, i) => {
+      const pct = (data.weeklyChart[i] / maxDay) * 100;
+      bar.style.height = `${Math.max(4, pct)}%`;
+    });
+  };
+
+  const populateAcTransactions = async () => {
+    const load = async () => {
+      const params = new URLSearchParams({
+        from: getVal(byId('acTxnFilterFrom')),
+        to: getVal(byId('acTxnFilterTo')),
+        method: getVal(byId('acTxnFilterMethod')) || 'all',
       });
-      $('#exportPdfBtn').off('click').on('click', function() {
-        window.print();
+      const txns = await apiFetch(`${API_ROUTES.transactions}?${params}`);
+      renderTransactionsTable(byId('acTransactionTable'), txns);
+    };
+    setVal(byId('acTxnFilterFrom'), '');
+    setVal(byId('acTxnFilterTo'), '');
+    setVal(byId('acTxnFilterMethod'), 'all');
+    on(byId('acTxnFilterApply'), 'click', load);
+    on(byId('acTxnFilterReset'), 'click', () => {
+      setVal(byId('acTxnFilterFrom'), '');
+      setVal(byId('acTxnFilterTo'), '');
+      setVal(byId('acTxnFilterMethod'), 'all');
+      load();
+    });
+    await load();
+  };
+
+  const populateAcStudents = async () => {
+    const load = async () => {
+      const params = new URLSearchParams({
+        from: getVal(byId('acStudentFilterFrom')),
+        to: getVal(byId('acStudentFilterTo')),
+        term: getVal(byId('acStudentFilterTerm')) || 'all',
       });
+      const students = await apiFetch(`${API_ROUTES.students}?${params}`);
+      renderStudentsTable(byId('acStudentTable'), students);
+    };
+    setVal(byId('acStudentFilterFrom'), '');
+    setVal(byId('acStudentFilterTo'), '');
+    setVal(byId('acStudentFilterTerm'), 'all');
+    on(byId('acStudentFilterApply'), 'click', load);
+    on(byId('acStudentFilterReset'), 'click', () => {
+      setVal(byId('acStudentFilterFrom'), '');
+      setVal(byId('acStudentFilterTo'), '');
+      setVal(byId('acStudentFilterTerm'), 'all');
+      load();
+    });
+    on(byId('acExportPdfBtn'), 'click', () => window.print());
+    await load();
+  };
+
+  const populateAcProfile = () => populateProfileShared('acProfile');
+
+  // ── Router + init ───────────────────────────────────
+  (async () => {
+    try {
+      // Ask the server who's logged in and what role they have —
+      // no more reading a role out of localStorage.
+      currentUser = await apiFetch(API_ROUTES.me);
+      role = currentUser.role === 'accountant' ? 'ac' : 'ht';
+    } catch {
+      window.location.href = '/login/';
+      return;
     }
 
-    function renderHtStudents(filter) {
-      var students = JSON.parse(localStorage.getItem('students') || '[]');
-      if (filter) {
-        var from = $('#studentFilterFrom').val();
-        var to = $('#studentFilterTo').val();
-        var term = $('#studentFilterTerm').val();
-        if (from) students = students.filter(function(s) { return s.date >= from; });
-        if (to) students = students.filter(function(s) { return s.date <= to; });
-        if (term && term !== 'all') students = students.filter(function(s) { return s.term === term; });
+    window.addEventListener('hashchange', () => {
+      loadPanel(location.hash.replace('#', '') || 'dashboard');
+    });
+
+    if (role === 'ac' && currentUser.mustChangePassword) {
+      location.hash = 'profile';
+    }
+
+    on(qs('.sidebar-nav'), 'click', (e) => {
+      const item = e.target.closest('.sidebar-item');
+      if (!item) return;
+      e.preventDefault();
+      location.hash = item.getAttribute('href').replace('#', '');
+    });
+
+    on(byId('logoutLink'), 'click', async (e) => {
+      e.preventDefault();
+      try { await apiFetch(API_ROUTES.logout, { method: 'POST' }); }
+      finally { window.location.href = '/'; }
+    });
+
+    on(document, 'click', (e) => {
+      if (e.target.closest('.modal-close-btn') || e.target.classList.contains('modal-overlay')) {
+        removeClassAll('.modal-overlay, .modal', 'open');
       }
-      var html = '';
-      students.forEach(function(s) {
-        html += '<tr><td>' + s.name + '</td><td>' + s.level + '</td><td>+265 ' + s.phone + '</td><td>' + fmtMoney(s.amount) + '</td><td>' + fmtDate(s.date) + '</td><td>' + s.term + '</td></tr>';
-      });
-      $('#studentTable').html(html);
-    }
+    });
 
-    function populateHtProfile() {
-      var user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      $('#profileFirstName').val(user.firstName || '');
-      $('#profileLastName').val(user.lastName || '');
-      $('#profileEmail').val(user.email || '');
-      $('#profilePhone').val(user.phone || '');
-      $('#profileError').text('');
-      $('#profilePasswordError').text('');
-
-      $('#profileSaveBtn').off('click').on('click', function() {
-        var firstName = $('#profileFirstName').val().trim();
-        var lastName = $('#profileLastName').val().trim();
-        var email = $('#profileEmail').val().trim();
-        var phone = $('#profilePhone').val().trim();
-
-        if (!firstName || !lastName || !email || !phone || phone.length < 9) {
-          $('#profileError').text('Please fill in all fields correctly');
-          return;
-        }
-        $('#profileError').text('');
-        user.firstName = firstName;
-        user.lastName = lastName;
-        user.email = email;
-        user.phone = phone;
-        localStorage.setItem('currentUser', JSON.stringify(user));
-
-        // Also update staffAccounts
-        var accounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
-        if (accounts[user.phone]) {
-          accounts[user.phone].firstName = firstName;
-          accounts[user.phone].lastName = lastName;
-          accounts[user.phone].email = email;
-          localStorage.setItem('staffAccounts', JSON.stringify(accounts));
-        }
-
-        alert('Profile updated!');
-      });
-
-      $('#profileChangePasswordBtn').off('click').on('click', function() {
-        var current = $('#profileCurrentPassword').val();
-        var newPass = $('#profileNewPassword').val();
-        var confirm = $('#profileConfirmPassword').val();
-
-        if (!current) { $('#profilePasswordError').text('Please enter current password'); return; }
-        if (!newPass || newPass.length < 6) { $('#profilePasswordError').text('New password must be at least 6 characters'); return; }
-        if (newPass !== confirm) { $('#profilePasswordError').text('Passwords do not match'); return; }
-
-        $('#profilePasswordError').text('');
-        var accounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
-        if (accounts[user.phone]) {
-          if (accounts[user.phone].password !== current) {
-            $('#profilePasswordError').text('Current password is incorrect');
-            return;
-          }
-          accounts[user.phone].password = newPass;
-          accounts[user.phone].mustChangePassword = false;
-          localStorage.setItem('staffAccounts', JSON.stringify(accounts));
-          alert('Password changed!');
-          $('#profileCurrentPassword, #profileNewPassword, #profileConfirmPassword').val('');
-        }
-      });
-    }
-
-    // ════════════════════════════════════════════════
-    //  ACCOUNTANT PANELS
-    // ════════════════════════════════════════════════
-
-    function populateAcDashboard() {
-      var user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      var school = JSON.parse(localStorage.getItem('schoolInfo') || '{}');
-      var txns = JSON.parse(localStorage.getItem('transactions') || '[]');
-
-      $('#acWelcomeName').text((user.firstName || '') + ' ' + (user.lastName || ''));
-      $('#acSchoolName').text(school.name || '—');
-      $('#acSchoolLocation').text(school.location || '—');
-
-      var today = new Date();
-      var todayStr = today.toISOString().split('T')[0];
-      var monthStr = todayStr.substring(0, 7);
-
-      var todayTxns = txns.filter(function(t) { return t.date === todayStr; });
-      var monthTxns = txns.filter(function(t) { return t.date.indexOf(monthStr) === 0; });
-
-      var todayTotal = 0;
-      todayTxns.forEach(function(t) { todayTotal += t.amount; });
-      var monthTotal = 0;
-      monthTxns.forEach(function(t) { monthTotal += t.amount; });
-      var pendingCount = txns.filter(function(t) { return t.status === 'Pending' || t.status === 'Partial'; }).length;
-
-      $('#acStatToday').text(fmtMoney(todayTotal));
-      $('#acStatTxnCount').text(todayTxns.length);
-      $('#acStatPending').text(pendingCount);
-      $('#acStatMonthly').text(fmtMoney(monthTotal));
-
-      // Outstanding balances — mock some
-      var outstanding = [
-        { name: "John Katengeza", level: "Form 3", owes: 60000 },
-        { name: "Tiwanike Mvula", level: "Form 2", owes: 95000 },
-        { name: "Chisomo Nkhwazi", level: "Form 1", owes: 30000 },
-        { name: "Annifer Phiri", level: "Form 4", owes: 120000 }
-      ];
-      var ohtml = '';
-      outstanding.forEach(function(o) {
-        var initials = o.name.split(' ').map(function(w) { return w[0]; }).join('');
-        ohtml += '<div class="outstanding-item"><div class="outstanding-avatar">' + initials + '</div><div class="outstanding-info"><strong>' + o.name + '</strong><small>' + o.level + ' — Owes MWK ' + Number(o.owes).toLocaleString() + '</small></div><span class="badge badge-failed">Overdue</span></div>';
-      });
-      $('#acOutstandingList').html(ohtml);
-
-      // Weekly chart
-      var dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      var dayTotals = [0,0,0,0,0,0,0];
-      // Get current week's transactions
-      var weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - today.getDay());
-      var weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6);
-
-      txns.forEach(function(t) {
-        var d = new Date(t.date);
-        if (d >= weekStart && d <= weekEnd) {
-          var dayIdx = d.getDay();
-          dayTotals[dayIdx] += t.amount;
-        }
-      });
-
-      var maxDay = Math.max.apply(null, dayTotals) || 1;
-      $('#acChartBars .chart-bar').each(function(i) {
-        var pct = (dayTotals[i] / maxDay) * 100;
-        $(this).css('height', Math.max(4, pct) + '%');
-      });
-    }
-
-    function populateAcTransactions() {
-      renderAcTransactions();
-      $('#acTxnFilterFrom, #acTxnFilterTo').val('');
-      $('#acTxnFilterMethod').val('all');
-      $('#acTxnFilterApply').off('click').on('click', function() { renderAcTransactions(true); });
-      $('#acTxnFilterReset').off('click').on('click', function() {
-        $('#acTxnFilterFrom, #acTxnFilterTo').val('');
-        $('#acTxnFilterMethod').val('all');
-        renderAcTransactions(false);
-      });
-    }
-
-    function renderAcTransactions(filter) {
-      var txns = JSON.parse(localStorage.getItem('transactions') || '[]');
-      if (filter) {
-        var from = $('#acTxnFilterFrom').val();
-        var to = $('#acTxnFilterTo').val();
-        var method = $('#acTxnFilterMethod').val();
-        if (from) txns = txns.filter(function(t) { return t.date >= from; });
-        if (to) txns = txns.filter(function(t) { return t.date <= to; });
-        if (method && method !== 'all') txns = txns.filter(function(t) { return t.method === method; });
-      }
-      var html = '';
-      txns.reverse().forEach(function(t) {
-        html += '<tr><td>' + t.id + '</td><td>' + t.student + '</td><td>' + t.level + '</td><td>' + fmtMoney(t.amount) + '</td><td>' + methodIcon(t.method) + '</td><td>' + fmtDate(t.date) + '</td><td>' + statusBadge(t.status) + '</td></tr>';
-      });
-      $('#acTransactionTable').html(html);
-    }
-
-    function populateAcStudents() {
-      renderAcStudents();
-      $('#acStudentFilterFrom, #acStudentFilterTo').val('');
-      $('#acStudentFilterTerm').val('all');
-      $('#acStudentFilterApply').off('click').on('click', function() { renderAcStudents(true); });
-      $('#acStudentFilterReset').off('click').on('click', function() {
-        $('#acStudentFilterFrom, #acStudentFilterTo').val('');
-        $('#acStudentFilterTerm').val('all');
-        renderAcStudents(false);
-      });
-      $('#acExportPdfBtn').off('click').on('click', function() {
-        window.print();
-      });
-    }
-
-    function renderAcStudents(filter) {
-      var students = JSON.parse(localStorage.getItem('students') || '[]');
-      if (filter) {
-        var from = $('#acStudentFilterFrom').val();
-        var to = $('#acStudentFilterTo').val();
-        var term = $('#acStudentFilterTerm').val();
-        if (from) students = students.filter(function(s) { return s.date >= from; });
-        if (to) students = students.filter(function(s) { return s.date <= to; });
-        if (term && term !== 'all') students = students.filter(function(s) { return s.term === term; });
-      }
-      var html = '';
-      students.forEach(function(s) {
-        html += '<tr><td>' + s.name + '</td><td>' + s.level + '</td><td>+265 ' + s.phone + '</td><td>' + fmtMoney(s.amount) + '</td><td>' + fmtDate(s.date) + '</td><td>' + s.term + '</td></tr>';
-      });
-      $('#acStudentTable').html(html);
-    }
-
-    function populateAcProfile() {
-      var user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      $('#acProfileFirstName').val(user.firstName || '');
-      $('#acProfileLastName').val(user.lastName || '');
-      $('#acProfileEmail').val(user.email || '');
-      $('#acProfilePhone').val(user.phone || '');
-      $('#acProfileError').text('');
-      $('#acProfilePasswordError').text('');
-
-      $('#acProfileSaveBtn').off('click').on('click', function() {
-        var firstName = $('#acProfileFirstName').val().trim();
-        var lastName = $('#acProfileLastName').val().trim();
-        var email = $('#acProfileEmail').val().trim();
-        var phone = $('#acProfilePhone').val().trim();
-
-        if (!firstName || !lastName || !email || !phone || phone.length < 9) {
-          $('#acProfileError').text('Please fill in all fields correctly');
-          return;
-        }
-        $('#acProfileError').text('');
-        user.firstName = firstName;
-        user.lastName = lastName;
-        user.email = email;
-        user.phone = phone;
-        localStorage.setItem('currentUser', JSON.stringify(user));
-
-        var accounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
-        if (accounts[user.phone]) {
-          accounts[user.phone].firstName = firstName;
-          accounts[user.phone].lastName = lastName;
-          accounts[user.phone].email = email;
-          localStorage.setItem('staffAccounts', JSON.stringify(accounts));
-        }
-        alert('Profile updated!');
-      });
-
-      $('#acProfileChangePasswordBtn').off('click').on('click', function() {
-        var current = $('#acProfileCurrentPassword').val();
-        var newPass = $('#acProfileNewPassword').val();
-        var confirm = $('#acProfileConfirmPassword').val();
-
-        if (!current) { $('#acProfilePasswordError').text('Please enter current password'); return; }
-        if (!newPass || newPass.length < 6) { $('#acProfilePasswordError').text('New password must be at least 6 characters'); return; }
-        if (newPass !== confirm) { $('#acProfilePasswordError').text('Passwords do not match'); return; }
-
-        $('#acProfilePasswordError').text('');
-        var accounts = JSON.parse(localStorage.getItem('staffAccounts') || '{}');
-        if (accounts[user.phone]) {
-          if (accounts[user.phone].password !== current) {
-            $('#acProfilePasswordError').text('Current password is incorrect');
-            return;
-          }
-          accounts[user.phone].password = newPass;
-          accounts[user.phone].mustChangePassword = false;
-          localStorage.setItem('staffAccounts', JSON.stringify(accounts));
-          alert('Password changed!');
-          $('#acProfileCurrentPassword, #acProfileNewPassword, #acProfileConfirmPassword').val('');
-        }
-      });
-    }
-  }
-
-});
+    await loadPanel(location.hash.replace('#', '') || 'dashboard');
+  })();
+}
