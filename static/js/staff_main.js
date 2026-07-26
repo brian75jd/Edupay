@@ -39,8 +39,10 @@ const API = {
   SCHOOL_INFO: "/api/schools/me/",
   ACCOUNTANTS: "/api/accountants/",
   ACCOUNTANT_DETAIL: (id) => `/api/accountants/${id}/`,
-  TRANSACTIONS: "/api/transactions/",
+  TRANSACTIONS: "/payment/transactions/",
   STUDENTS: "/api/students/",
+  PROFILE: "/api/profile/",
+  CHANGE_PASSWORD: "/api/auth/change-password/",
   TAB_FRAGMENT: (role, key) => `/static/${role}_content/${key}.html`,
 };
 
@@ -132,9 +134,18 @@ async function init() {
     if (el('ht-school-type')) el('ht-school-type').textContent = currentUser.school?.type || '—';
 
     if (el('ht-prof-firstname')) el('ht-prof-firstname').value = currentUser.firstName || '';
-    if (el('ht-prof-lastname')) el('ht-prof-lastname').value = currentUser.lastName || '';
-    if (el('ht-prof-email')) el('ht-prof-email').value = currentUser.email || '';
-    if (el('ht-prof-phone')) el('ht-prof-phone').value = (currentUser.phone || '').replace('+265', '');
+    if (el('ht-prof-lastname'))  el('ht-prof-lastname').value  = currentUser.lastName || '';
+    if (el('ht-prof-email'))     el('ht-prof-email').value     = currentUser.email || '';
+    if (el('ht-prof-phone'))     el('ht-prof-phone').value     = (currentUser.phone || '').replace('+265', '');
+
+    if (el('ac-dash-welcome'))   el('ac-dash-welcome').textContent  = currentUser.firstName || '—';
+    if (el('ac-dash-sname'))     el('ac-dash-sname').textContent    = currentUser.school?.name || '—';
+    if (el('ac-dash-sloc'))      el('ac-dash-sloc').textContent     = currentUser.school?.location || '—';
+
+    if (el('ac-prof-firstname')) el('ac-prof-firstname').value = currentUser.firstName || '';
+    if (el('ac-prof-lastname'))  el('ac-prof-lastname').value  = currentUser.lastName || '';
+    if (el('ac-prof-email'))     el('ac-prof-email').value     = currentUser.email || '';
+    if (el('ac-prof-phone'))     el('ac-prof-phone').value     = (currentUser.phone || '').replace('+265', '');
 
     if (role === "ac" && currentUser.must_change_password) {
       window.location.hash = "profile";
@@ -146,6 +157,46 @@ async function init() {
   window.fetchTransactions = () => apiRequest(API.TRANSACTIONS);
   window.fetchStudents = () => apiRequest(API.STUDENTS);
   window.fetchAccountants = () => apiRequest(API.ACCOUNTANTS);
+
+  // ── Save Profile handler (both roles) ──
+  var profileSaveBtn = document.getElementById('ht-prof-save-btn') || document.getElementById('ac-prof-save-btn');
+  if (profileSaveBtn) {
+    profileSaveBtn.addEventListener('click', async function () {
+      var p = document.getElementById('ht-prof-save-btn') ? 'ht-' : 'ac-';
+      var fn = window.toTitleCase(document.getElementById(p + 'prof-firstname').value.trim());
+      var ln = window.toTitleCase(document.getElementById(p + 'prof-lastname').value.trim());
+      var em = document.getElementById(p + 'prof-email').value.trim();
+      var ph = '+265' + document.getElementById(p + 'prof-phone').value.trim();
+      var err = document.getElementById(p + 'prof-error');
+      if (!fn || !ln || !em || ph.length < 13) { if (err) err.textContent = 'Fill in all fields correctly'; return; }
+      try {
+        await apiRequest(API.PROFILE, { method: 'PATCH', body: JSON.stringify({ firstName: fn, lastName: ln, email: em, phone: ph }) });
+        if (err) err.textContent = '';
+        alert('Profile updated!');
+      } catch (e) { if (err) err.textContent = e.message; }
+    });
+  }
+
+  // ── Change Password handler (both roles) ──
+  var passBtn = document.getElementById('ht-prof-change-pass-btn') || document.getElementById('ac-prof-change-pass-btn');
+  if (passBtn) {
+    passBtn.addEventListener('click', async function () {
+      var p = document.getElementById('ht-prof-change-pass-btn') ? 'ht-' : 'ac-';
+      var cur = document.getElementById(p + 'prof-cur-pass').value;
+      var newP = document.getElementById(p + 'prof-new-pass').value;
+      var con = document.getElementById(p + 'prof-confirm-pass').value;
+      var err = document.getElementById(p + 'prof-pass-error');
+      if (!cur) { if (err) err.textContent = 'Enter current password'; return; }
+      if (!newP || newP.length < 6) { if (err) err.textContent = 'New password must be at least 6 characters'; return; }
+      if (newP !== con) { if (err) err.textContent = 'Passwords do not match'; return; }
+      try {
+        await apiRequest(API.CHANGE_PASSWORD, { method: 'POST', body: JSON.stringify({ currentPassword: cur, newPassword: newP }) });
+        if (err) err.textContent = '';
+        alert('Password changed!');
+        [p + 'prof-cur-pass', p + 'prof-new-pass', p + 'prof-confirm-pass'].forEach(function (id) { document.getElementById(id).value = ''; });
+      } catch (e) { if (err) err.textContent = e.message; }
+    });
+  }
 
   window.refreshHtAccountants = async function () {
     try {
@@ -193,6 +244,58 @@ async function init() {
     }
   };
 
+  window.refreshAcTransactions = async function () {
+    try {
+      var from = document.getElementById("ac-txn-from");
+      var to = document.getElementById("ac-txn-to");
+      var method = document.getElementById("ac-txn-method");
+      var params = new URLSearchParams();
+      if (from && from.value) params.append("from", from.value);
+      if (to && to.value) params.append("to", to.value);
+      if (method && method.value && method.value !== "all") params.append("method", method.value);
+      var qs = params.toString();
+      var resp = await apiRequest(API.TRANSACTIONS + (qs ? "?" + qs : ""));
+      var data = resp.transactions || [];
+      var tbody = document.getElementById("ac-txn-table");
+      if (!tbody) return;
+      if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-muted);">No transactions found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(function (t) {
+        var dt = t.date_created ? t.date_created.split("T")[0] : "";
+        return "<tr><td>" + (t.id || "") + "</td><td>" + (t.paid_for || "") + "</td><td></td><td>" + window.fmtMoney(t.amount || 0) + "</td><td></td><td>" + (dt ? window.fmtDate(dt) : "") + "</td><td>" + window.statusBadge(t.status || "") + "</td></tr>";
+      }).join("");
+    } catch (err) {
+      console.error("Failed to load transactions:", err);
+    }
+  };
+
+  window.refreshAcStudents = async function () {
+    try {
+      var from = document.getElementById("ac-stu-from");
+      var to = document.getElementById("ac-stu-to");
+      var term = document.getElementById("ac-stu-term");
+      var params = new URLSearchParams();
+      if (from && from.value) params.append("from", from.value);
+      if (to && to.value) params.append("to", to.value);
+      if (term && term.value && term.value !== "all") params.append("term", term.value);
+      var qs = params.toString();
+      var data = await apiRequest(API.STUDENTS + (qs ? "?" + qs : ""));
+      var tbody = document.getElementById("ac-stu-table");
+      if (!tbody) return;
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">No students found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(function (s) {
+        return "<tr><td>" + (s.name || "") + "</td><td>" + (s.level || "") + "</td><td>" + (s.phone || "") + "</td><td>" + window.fmtMoney(s.amount || 0) + "</td><td>" + (s.date || "") + "</td><td>" + (s.term || "") + "</td></tr>";
+      }).join("");
+    } catch (err) {
+      console.error("Failed to load students:", err);
+    }
+  };
+
    window.loadTab = function (key) {
     document.querySelectorAll(".dashboard-panel").forEach((el) => (el.style.display = "none"));
     const panel = document.getElementById("panel-" + key);
@@ -214,6 +317,16 @@ async function init() {
 
     if (key === "accountants") {
       window.refreshHtAccountants();
+    }
+    if (key === "transactions") {
+      if (document.getElementById("ac-txn-table")) {
+        window.refreshAcTransactions();
+      }
+    }
+    if (key === "students") {
+      if (document.getElementById("ac-stu-table")) {
+        window.refreshAcStudents();
+      }
     }
   };
 
@@ -240,6 +353,34 @@ async function init() {
 
    const initialTab = window.location.hash.replace("#", "") || "dashboard";
   window.loadTab(initialTab);
+
+  // ── Transaction filter buttons ──
+  var txnApply = document.getElementById("ac-txn-apply");
+  var txnReset = document.getElementById("ac-txn-reset");
+  if (txnApply) txnApply.addEventListener("click", function () { window.refreshAcTransactions(); });
+  if (txnReset) txnReset.addEventListener("click", function () {
+    var from = document.getElementById("ac-txn-from");
+    var to = document.getElementById("ac-txn-to");
+    var method = document.getElementById("ac-txn-method");
+    if (from) from.value = "";
+    if (to) to.value = "";
+    if (method) method.value = "all";
+    window.refreshAcTransactions();
+  });
+
+  // ── Student filter buttons ──
+  var stuApply = document.getElementById("ac-stu-apply");
+  var stuReset = document.getElementById("ac-stu-reset");
+  if (stuApply) stuApply.addEventListener("click", function () { window.refreshAcStudents(); });
+  if (stuReset) stuReset.addEventListener("click", function () {
+    var from = document.getElementById("ac-stu-from");
+    var to = document.getElementById("ac-stu-to");
+    var term = document.getElementById("ac-stu-term");
+    if (from) from.value = "";
+    if (to) to.value = "";
+    if (term) term.value = "all";
+    window.refreshAcStudents();
+  });
 
   const logoutLink = document.getElementById("logoutLink");
   if (logoutLink) {

@@ -12,6 +12,7 @@ import string
 import phonenumbers
 
 User = get_user_model()
+from Payments.models import Transaction
 from .serializers import (
     AccountantSerializer,
     PaymentMethodSerializer,
@@ -275,3 +276,44 @@ class AccountantView(APIView):
         school.accountants.remove(user)
         user.delete()
         return Response(status=204)
+
+
+class StudentsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        school = School.objects.filter(user=request.user).first()
+        if not school:
+            school = School.objects.filter(accountants=request.user).first()
+        if not school:
+            return Response({'detail': 'No school found for this user'}, status=400)
+
+        from_param = request.query_params.get('from')
+        to_param = request.query_params.get('to')
+        term_param = request.query_params.get('term')
+
+        qs = Transaction.objects.filter(school=school)
+        if from_param:
+            qs = qs.filter(date_created__gte=from_param)
+        if to_param:
+            qs = qs.filter(date_created__lte=to_param)
+        qs = qs.order_by('-date_created')
+
+        seen = {}
+        for t in qs:
+            name = (t.paid_for or '').strip()
+            if not name:
+                continue
+            if name in seen:
+                seen[name]['amount'] += t.amount
+            else:
+                seen[name] = {
+                    'name': name,
+                    'level': '',
+                    'phone': t.contact or '',
+                    'amount': t.amount,
+                    'date': t.date_created.strftime('%Y-%m-%d') if t.date_created else '',
+                    'term': '',
+                }
+
+        return Response(list(seen.values()))
