@@ -1,5 +1,8 @@
 from django.core.validators import RegexValidator
 from django.db import models
+from django.utils import timezone
+from datetime import timedelta
+import uuid
 
 phone_validator = RegexValidator(
     regex=r"^\+?\d{7,15}$",
@@ -8,11 +11,6 @@ phone_validator = RegexValidator(
 
 
 class School(models.Model):
-    """A school registered on the EduPay platform.
-
-    A school must reach ``status = APPROVED`` before it appears in
-    parent-facing search results or can receive payments.
-    """
 
     class Status(models.TextChoices):
         APPROVED = "approved", "Approved"
@@ -57,12 +55,6 @@ class School(models.Model):
 
 
 class PaymentMethod(models.Model):
-    """A bank or mobile money channel a school uses to receive payouts.
-
-    EduPay disburses a school's accumulated ledger balance to one of its
-    active payment methods when a :class:`transactions.models.Transaction`
-    is run.
-    """
 
     class PaymentType(models.TextChoices):
         BANK = "bank", "Bank"
@@ -99,3 +91,46 @@ class PaymentMethod(models.Model):
 
     def __str__(self):
         return f"{self.school.name} - {self.provider} ({self.payment_type})"
+
+
+class StaffAccount(models.Model):
+
+    class Role(models.TextChoices):
+        HEADTEACHER = "headteacher", "Headteacher"
+        ACCOUNTANT = "accountant", "Accountant"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    school = models.ForeignKey(
+        School, on_delete=models.CASCADE, related_name="staff_accounts"
+    )
+    role = models.CharField(max_length=20, choices=Role.choices)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=20, unique=True)
+    hashed_password = models.CharField(max_length=300)
+    must_change_password = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["school", "role", "last_name"]
+
+    def __str__(self):
+        return f"{self.phone_number} - {self.school.name} ({self.role})"
+
+
+class StaffLoginSession(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    session_key = models.CharField(max_length=64)
+    user = models.ForeignKey(StaffAccount, on_delete=models.CASCADE)
+    is_valid = models.BooleanField(default=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def session_expired(self):
+        return timezone.now() > self.date_created + timedelta(hours=12)
+
+    @property
+    def invalidate_session(self):
+        self.is_valid = False
+        self.save(update_fields=["is_valid"])
