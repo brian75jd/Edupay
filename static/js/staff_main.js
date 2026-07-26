@@ -33,7 +33,8 @@
    mechanics changed, not the URL shape)
      GET /static/{role}_content/{tab}.html
    ========================================================================== */
-
+localStorage.removeItem('transactions');
+console.log(localStorage)
 const API = {
   ME: "/api/auth/me/",
   LOGOUT: "/api/auth/logout/",
@@ -45,7 +46,6 @@ const API = {
   TAB_FRAGMENT: (role, key) => `/static/${role}_content/${key}.html`,
 };
 
-/** Wrapper around fetch: adds auth header + JSON handling, throws on non-2xx. */
 async function apiRequest(url, options = {}) {
   const token = localStorage.getItem("authToken"); // auth token is fine to keep client-side
   const response = await fetch(url, {
@@ -66,7 +66,7 @@ async function apiRequest(url, options = {}) {
     throw new Error(detail);
   }
 
-  if (response.status === 204) return null; // e.g. DELETE with no content
+  if (response.status === 204) return null; 
   return response.json();
 }
 
@@ -79,19 +79,6 @@ async function init() {
   const tabLoaded = {};
   let currentUser = null;
   let role = "ht";
-
-  // ── Fetch current user (replaces localStorage.getItem('currentUser')) ──
-  try {
-    currentUser = await apiRequest(API.ME);
-    role = currentUser.role === "accountant" ? "ac" : "ht";
-  } catch (err) {
-    console.error("Failed to load current user:", err);
-    // Optionally redirect to login if the session/token is invalid:
-    // window.location.href = "/school/login/";
-    return;
-  }
-
-  // ── Helpers (exposed globally, same names as before) ──────────────────
   window.fmtMoney = function (amount) {
     return "MWK " + Number(amount).toLocaleString();
   };
@@ -119,13 +106,11 @@ async function init() {
     return method;
   };
 
-  // Reusable data fetchers for tab-specific scripts to call instead of
-  // reading localStorage directly.
+
   window.fetchTransactions = () => apiRequest(API.TRANSACTIONS);
   window.fetchStudents = () => apiRequest(API.STUDENTS);
 
-  // ── Router ──────────────────────────────────────────────────────────
-  window.loadTab = function (key) {
+   window.loadTab = function (key) {
     document.querySelectorAll(".dashboard-panel").forEach((el) => (el.style.display = "none"));
     const panel = document.getElementById("panel-" + key);
     if (panel) panel.style.display = "block";
@@ -145,13 +130,9 @@ async function init() {
       .catch((err) => console.error(`Failed to load tab fragment "${key}":`, err));
   };
 
-  // Force a password change for accountants flagged by the backend
-  // (replaces the localStorage 'staffAccounts' lookup).
   if (role === "ac" && currentUser.must_change_password) {
     window.location.hash = "profile";
   }
-
-  // ── Sidebar clicks (event delegation, no jQuery) ───────────────────
   const sidebarNav = document.querySelector(".sidebar-nav");
   if (sidebarNav) {
     sidebarNav.addEventListener("click", (e) => {
@@ -173,11 +154,9 @@ async function init() {
     if (e.state) window.loadTab(e.state.tab);
   };
 
-  // ── Initial load ────────────────────────────────────────────────────
-  const initialTab = window.location.hash.replace("#", "") || "dashboard";
+   const initialTab = window.location.hash.replace("#", "") || "dashboard";
   window.loadTab(initialTab);
 
-  // ── Logout ──────────────────────────────────────────────────────────
   const logoutLink = document.getElementById("logoutLink");
   if (logoutLink) {
     logoutLink.addEventListener("click", async (e) => {
@@ -193,14 +172,12 @@ async function init() {
     });
   }
 
-  // ── Modal close (event delegation) ─────────────────────────────────
   document.addEventListener("click", (e) => {
     if (e.target.closest(".modal-close-btn") || e.target.classList.contains("modal-overlay")) {
       document.querySelectorAll(".modal-overlay.open, .modal.open").forEach((el) => el.classList.remove("open"));
     }
   });
 
-  // ── School modal save (headteacher) ────────────────────────────────
   document.addEventListener("click", async (e) => {
     if (!e.target.closest("#schoolModalSaveBtn")) return;
 
@@ -298,7 +275,7 @@ async function init() {
       }
     });
 
-    // Open add modal
+    
     document.addEventListener("click", (e) => {
       if (!e.target.closest("#addAccountantBtn")) return;
       editingAccId = null;
@@ -311,9 +288,6 @@ async function init() {
       document.getElementById("accountantModalOverlay")?.classList.add("open");
     });
 
-    // Open edit modal — expects data-id, data-first-name, data-last-name,
-    // data-email, data-phone attributes on the trigger button, populated
-    // from the accountants list you fetched via GET /api/accountants/.
     document.addEventListener("click", (e) => {
       const btn = e.target.closest(".acc-edit-btn");
       if (!btn) return;
