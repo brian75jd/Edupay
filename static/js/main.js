@@ -1,3 +1,11 @@
+window.standardizePhone = function (input) {
+  var digits = input.replace(/\D/g, '');
+  if (digits.startsWith('265')) digits = digits.slice(3);
+  digits = digits.replace(/^0+/, '');
+  if (digits.length !== 9) return null;
+  return '+265' + digits;
+};
+
 const API_ROUTES = {
   login: '/api/auth/login/',
   logout: '/api/auth/logout/',
@@ -118,8 +126,8 @@ function initGlobalUI() {
   on(byId('schoolSearch'), 'keyup', function () {
     const value = this.value.toLowerCase();
     qsAll('#schoolList .school-list-item').forEach((item) => {
-      const name = qs('.school-info h3', item)?.textContent.toLowerCase() ?? '';
-      const location = qs('.school-info p', item)?.textContent.toLowerCase() ?? '';
+      const name = qs('.school-card-name', item)?.textContent.toLowerCase() ?? '';
+      const location = qs('.school-card-location', item)?.textContent.toLowerCase() ?? '';
       item.style.display = (name.includes(value) || location.includes(value)) ? '' : 'none';
     });
   });
@@ -295,10 +303,10 @@ function initPayFeesFlow() {
 function initStaffAuthForms() {
   on(byId('loginForm'), 'submit', async (e) => {
     e.preventDefault();
-    const phone = getVal(byId('loginPhone')).trim();
+    const phone = window.standardizePhone(getVal(byId('loginPhone')));
     const password = getVal(byId('loginPassword'));
 
-    if (!phone || phone.length < 9) return setText(byId('loginError'), 'Please enter a valid phone number');
+    if (!phone) return setText(byId('loginError'), 'Enter a valid phone number');
     if (!password || password.length < 6) return setText(byId('loginError'), 'Password must be at least 6 characters');
 
     try {
@@ -316,12 +324,12 @@ function initStaffAuthForms() {
     const firstName = getVal(byId('htFirstName')).trim();
     const lastName = getVal(byId('htLastName')).trim();
     const email = getVal(byId('htEmail')).trim();
-    const phone = getVal(byId('htPhone')).trim();
+    const phone = window.standardizePhone(getVal(byId('htPhone')));
     const password = getVal(byId('htPassword'));
     const confirm = getVal(byId('htConfirmPassword'));
 
     if (!firstName || !lastName || !email) return setText(byId('htSignupError'), 'Please fill in all fields');
-    if (!phone || phone.length < 9) return setText(byId('htSignupError'), 'Please enter a valid phone number (9 digits)');
+    if (!phone) return setText(byId('htSignupError'), 'Enter a valid phone number');
     if (!password || password.length < 6) return setText(byId('htSignupError'), 'Password must be at least 6 characters');
     if (password !== confirm) return setText(byId('htSignupError'), 'Passwords do not match');
 
