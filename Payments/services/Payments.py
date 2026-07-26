@@ -5,12 +5,12 @@ from django.db import transaction as db_transansaction
 from .Exceptions import (PaymentCredentialException, 
                          SchoolNotFoundException,
                          SchoolExceptionError,
-                         RequestTimeoutException)
+                         RequestTimeoutException,UserNotFound)
 from Payments.models import Transaction
 import secrets
 from .utils import calculate_total_amount
 import logging
-
+from Users.models import ParentUserLogginSession
 
 PAYCHANGU_SECRET_KEY = settings.PAY_SECRET_KEY
 
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class PaychanguInitiatePayment:
     @staticmethod
-    def initiate_payment(validated_data: dict)->dict:
+    def initiate_payment(validated_data: dict, request)->dict:
         try:
             print(PAYCHANGU_SECRET_KEY)
             amount = validated_data.get('amount')
@@ -41,6 +41,16 @@ class PaychanguInitiatePayment:
             if not school.status.lower() =="approved":
                 raise SchoolExceptionError('School is not approve to receive payments')
 
+            session_key = request.session.get('session_key')
+            try:
+                user = ParentUserLogginSession.objects.get(
+                    session_key = session_key
+                ).user
+
+            except ParentUserLogginSession.DoesNotExist:
+                raise UserNotFound()
+        
+
             with db_transansaction.atomic():            
                 calculate_total = calculate_total_amount(amount = amount)
                 trans_fee = calculate_total[1]
@@ -52,6 +62,7 @@ class PaychanguInitiatePayment:
                     amount = total_amount,
                     trans_ref = secrets.token_hex(8),
                     school = school,
+                    user = user,
                     paid_for = f"{student_first_name} {student_last_name}"
                 )
                   
@@ -65,9 +76,9 @@ class PaychanguInitiatePayment:
                     'first_name':student_first_name,
                     'last_name':student_last_name,
                     "email":'brian75jd@gmail.com',
-                    "callback_url":'http://localhost:8000/callback/',
-                    "webhook_url":'http://localhost:8000/api/payment/webhook/',
-                    'return_url':'http://localhost:8000/api/payment/webhook/'
+                    "callback_url":'https://kaylin-plumbic-luana.ngrok-free.dev/payment/v1/initiate_payment/',
+                    "webhook_url":'https://kaylin-plumbic-luana.ngrok-free.dev/payment/api/webhook/',
+                    'return_url':'https://kaylin-plumbic-luana.ngrok-free.dev/payment/v1/initiate_payment/'
                 }
 
                 headers ={

@@ -20,6 +20,10 @@ class RequestTimeoutException(APIException):
     default_detail = ''
 
 
+class UserNotFound(APIException):
+    default_code = 'user_error'
+    status_code = 404
+    default_detail = 'Credentials were not provided.Please login'
 
 class PayChanguWebhookException(APIException):
     status_code = 400
