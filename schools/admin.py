@@ -20,15 +20,15 @@ class SchoolAdmin(admin.ModelAdmin):
 
     @admin.action(description="Approve selected schools")
     def approve_schools(self, request, queryset):
-        queryset.update(status=School.Status.APPROVED)
+        queryset.update(status=School.STATUS.APPROVED)
 
     @admin.action(description="Deny selected schools")
     def deny_schools(self, request, queryset):
-        queryset.update(status=School.Status.DENIED)
+        queryset.update(status=School.STATUS.DENIED)
 
     @admin.action(description="Suspend selected schools")
     def suspend_schools(self, request, queryset):
-        queryset.update(status=School.Status.SUSPENDED)
+        queryset.update(status=School.STATUS.SUSPENDED)
 
 
 @admin.register(PaymentMethod)
