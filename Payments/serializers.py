@@ -1,4 +1,11 @@
 from rest_framework import serializers
+from Payments.models import Receipt
+
+
+class ReceiptSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Receipt
+        fields = ['id','pdf']
 
 class PaymentUserCredentials(serializers.Serializer):
     student_first_name = serializers.CharField(

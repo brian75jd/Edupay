@@ -11,8 +11,7 @@ from reportlab.platypus import (
     Table,
     TableStyle,
 )
-from Payments.models import Transaction,ReceiptsSequence,Receipt
-from django.utils import timezone
+from Payments.models import ReceiptsSequence
 from django.db import transaction
 
 

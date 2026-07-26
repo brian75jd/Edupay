@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import FileResponse,Http404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import logging
@@ -9,7 +10,8 @@ from drf_spectacular.utils import (
 from Payments.serializers import (
     InitiatePaymentResponseSerializer,
     View404ResponseSerializer,
-    PaymentUserCredentials
+    PaymentUserCredentials,
+    ReceiptSerializer
 )
 from Payments.models import Transaction,Receipt,LedgerEntry
 from Payments.services.Payments import PaychanguInitiatePayment
@@ -116,3 +118,25 @@ class Payment_Webhook(APIView):
             raise
 
           
+
+
+
+def get_receipt(request,*args,**kwargs):
+    tx_ref = request.GET.get('tx_ref')
+    print(tx_ref)
+    try:
+        trans = Transaction.objects.get(
+            id = tx_ref
+        )
+    
+    except Transaction.DoesNotExist:
+        return render(request, 'payment/not_found.html')
+
+    receipt = Receipt.objects.get(
+        transanction = trans
+    )
+
+    return FileResponse(
+        receipt.pdf.open('rb'),
+        content_type ='application/pdf'
+    )

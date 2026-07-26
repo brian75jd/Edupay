@@ -76,9 +76,9 @@ class PaychanguInitiatePayment:
                     'first_name':student_first_name,
                     'last_name':student_last_name,
                     "email":'brian75jd@gmail.com',
-                    "callback_url":'https://kaylin-plumbic-luana.ngrok-free.dev/payment/v1/initiate_payment/',
+                    "callback_url":'https://kaylin-plumbic-luana.ngrok-free.dev/payment/api/finish/',
                     "webhook_url":'https://kaylin-plumbic-luana.ngrok-free.dev/payment/api/webhook/',
-                    'return_url':'https://kaylin-plumbic-luana.ngrok-free.dev/payment/v1/initiate_payment/'
+                    'return_url':'https://kaylin-plumbic-luana.ngrok-free.dev/payment/api/finish/'
                 }
 
                 headers ={
