@@ -13,7 +13,7 @@ DEBUG = False
 ALLOWED_HOSTS = [
     'localhost',
     'kaylin-plumbic-luana.ngrok-free.dev',
-    'https://edupay-dgbc.onrender.com'
+    'edupay-dgbc.onrender.com'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
