@@ -33,7 +33,9 @@ class SchoolDetailSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "logo",
-            'location'
+            'location',
+            'postal_address',
+            'fee_amount'
 
         ]
 
