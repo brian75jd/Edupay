@@ -1,5 +1,6 @@
 from Users.serializers import (ParentCreationSerializer, 
-                               Response200Serializer,UserHistory200Response)
+                               Response200Serializer,UserHistory200Response,
+                               HeadTeacherCreationSerializer)
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -12,7 +13,10 @@ from Payments.models import Transaction
 from Users.models import ParentUserLogginSession
 from Users.Exceptions import ParentUserException
 from Users.serializers import TransactionSerializer
+from django.contrib.auth import get_user_model
+from django.contrib.auth import login
 
+User = get_user_model()
 
 
 
@@ -101,3 +105,31 @@ class UserHistory(APIView):
             'success':True,
             'data':serializer.data
         })
+
+
+class HeadTeacherCreation(APIView):
+
+    def post(self,request,*args, **kwargs):
+        try:
+            serializer = HeadTeacherCreationSerializer(data = request.data)
+
+            serializer.is_valid(raise_exception=True)
+
+            user = User.objects.create_user(
+                phone_number = serializer.validated_data.get('phone_number'),
+                first_name = serializer.validated_data.get('first_name'),
+                last_name = serializer.validated_data.get('last_name'),
+                username = serializer.validated_data.get('first_name'),
+                email = serializer.validated_data.get('email'),
+                password= serializer.validated_data.get('password1')
+            )
+
+            login(request, user)
+            return Response({
+                'success':True,
+                'msg':'Account created successfully'
+            })
+
+        except Exception as exp:
+            print(exp)
+            raise

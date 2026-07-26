@@ -1,11 +1,14 @@
 from django.core.validators import RegexValidator
 from django.db import models
+from django.contrib.auth import get_user_model
 
 phone_validator = RegexValidator(
     regex=r"^\+?\d{7,15}$",
     message="Enter a valid phone number (7-15 digits, optional leading '+').",
 )
 
+
+User = get_user_model()
 
 class School(models.Model):
 
@@ -27,6 +30,7 @@ class School(models.Model):
     email = models.EmailField()
     location = models.CharField(default="Lilongwe",max_length=300)
     official_document = models.FileField(upload_to="school_documents/")
+    user = models.ForeignKey(User, on_delete=models.CASCADE,null=True,blank=True)
     status = models.CharField(
         max_length=20, choices=STATUS.choices, default=STATUS.PENDING
     )

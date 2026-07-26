@@ -2,10 +2,13 @@ const API_ROUTES = {
   login: '/api/auth/login/',
   logout: '/api/auth/logout/',
   me: '/api/auth/me/',
-  headteacherSignup: '/api/auth/headteacher-signup/',
+  headteacherSignup: '/user/create_headteacher/',
   changePassword: '/api/auth/change-password/',
 
-  schools: '/api/schools/',
+ 
+
+
+  schools: '/api/create_school/',
   schoolMine: '/api/schools/mine/',
   schoolById: (id) => `/api/schools/${id}/`,
 
@@ -30,6 +33,9 @@ const getCookie = (name) => {
   const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
   return match ? decodeURIComponent(match[2]) : null;
 };
+
+
+
 
 
 const apiFetch = async (path, { method = 'GET', body } = {}) => {
@@ -320,10 +326,14 @@ function initStaffAuthForms() {
     if (password !== confirm) return setText(byId('htSignupError'), 'Passwords do not match');
 
     try {
-      // Server hashes the password and rejects duplicate phone numbers.
+      
       await apiFetch(API_ROUTES.headteacherSignup, {
         method: 'POST',
-        body: { firstName, lastName, email, phone, password },
+        body: { 
+          first_name:firstName, last_name:lastName, 
+          email:email, phone_number:phone, 
+          password1:password 
+        },
       });
       setText(byId('htSignupError'), '');
       window.location.href = '/school/create/';
@@ -334,6 +344,7 @@ function initStaffAuthForms() {
 
   on(byId('createSchoolForm'), 'submit', async (e) => {
     e.preventDefault();
+    console.log('Running again')
     const name = getVal(byId('schoolName')).trim();
     const location = getVal(byId('schoolLocation')).trim();
     const type = getVal(byId('schoolType'));

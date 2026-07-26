@@ -3,7 +3,28 @@ from Users.models import ParentUsers,ParentUserLogginSession
 from django.contrib.auth.hashers import make_password,check_password
 from Users.Exceptions import DuplicatePhoneException,UserCredentialException
 import secrets
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
+
+def general_validate_phone(phone:str)-> dict:
+    phone = phonenumbers.parse(number=phone, region='MW')
+
+    if not phonenumbers.is_valid_number(phone) or not phonenumbers.is_possible_number(phone):
+        return{
+            'success':False,
+            'error':'Invalid malawian phone number'
+        }
+    
+    phone = phonenumbers.format_number(phone, phonenumbers.PhoneNumberFormat.E164)
+
+    if User.objects.filter(phone_number = phone).exists():
+        raise DuplicatePhoneException()
+
+    return{
+        'success':True,
+        'phone':phone
+    }
 
 
 def validate_phone(phone:str)-> dict:
