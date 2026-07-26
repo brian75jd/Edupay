@@ -61,8 +61,16 @@ const apiFetch = async (path, { method = 'GET', body } = {}) => {
   try { data = await res.json(); } catch {  }
 
   if (!res.ok) {
-    const message = data?.detail || data?.error || data?.message || 'Something went wrong. Please try again.';
-    throw new Error(message);
+    var message = data?.detail || data?.error || data?.message || null;
+    if (!message && data && typeof data === 'object') {
+      var keys = Object.keys(data);
+      for (var i = 0; i < keys.length; i++) {
+        var val = data[keys[i]];
+        if (Array.isArray(val) && val.length) { message = val[0]; break; }
+        if (typeof val === 'string') { message = val; break; }
+      }
+    }
+    throw new Error(message || 'Something went wrong. Please try again.');
   }
   return data;
 };
