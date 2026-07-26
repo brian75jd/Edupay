@@ -15,6 +15,9 @@ from Users.Exceptions import ParentUserException
 from Users.serializers import TransactionSerializer
 from django.contrib.auth import get_user_model
 from django.contrib.auth import login
+from django.contrib.auth.hashers import check_password
+import phonenumbers
+from schools.models import School
 
 User = get_user_model()
 
@@ -133,3 +136,37 @@ class HeadTeacherCreation(APIView):
         except Exception as exp:
             print(exp)
             raise
+
+
+class StaffLoginView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        phone = request.data.get('phone')
+        password = request.data.get('password')
+
+        if not phone or not password:
+            return Response({'success': False, 'detail': 'Phone and password are required'}, status=400)
+
+        try:
+            parsed = phonenumbers.parse(phone, 'MW')
+            phone = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+        except phonenumbers.NumberParseException:
+            return Response({'success': False, 'detail': 'Invalid phone number'}, status=400)
+
+        try:
+            user = User.objects.get(phone_number=phone)
+        except User.DoesNotExist:
+            return Response({'success': False, 'detail': 'Invalid credentials'}, status=400)
+
+        if not check_password(password, user.password):
+            return Response({'success': False, 'detail': 'Invalid credentials'}, status=400)
+
+        if not user.is_active:
+            return Response({'success': False, 'detail': 'Account disabled'}, status=400)
+
+        login(request, user)
+
+        role = 'headteacher' if School.objects.filter(user=user).exists() else 'accountant'
+
+        return Response({'success': True, 'role': role})

@@ -12,6 +12,7 @@ from Payments.views import (
     change_password_view,
 )
 from Users.views import login_view, signup_view
+from Users.api import StaffLoginView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -35,6 +36,7 @@ urlpatterns = [
     path('user/',include('Users.urls')),
 
     path('api/', include('schools.urls')),
+    path('api/auth/login/', StaffLoginView.as_view(), name='staff_login'),
 
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
