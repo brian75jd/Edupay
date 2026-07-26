@@ -1,3 +1,6 @@
 from django.contrib import admin
+from Users.models import *
 
-# Register your models here.
+@admin.register(ParentUsers)
+class ParentUserAAdmin(admin.ModelAdmin):
+    list_display = ('phone_number','hashed_password')

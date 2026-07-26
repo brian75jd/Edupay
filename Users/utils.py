@@ -47,7 +47,7 @@ def validate_phone(phone:str)-> dict:
     }
 
 
-def ParentCreationView(validated_data:dict):
+def ParentCreationView(request,validated_data:dict):
     phone = validated_data.get('phone_number')
     pin = validated_data.get('pin_code')
 
@@ -58,6 +58,13 @@ def ParentCreationView(validated_data:dict):
         phone_number = phone,
         hashed_password = make_password(pin)
     )
+
+    session = ParentUserLogginSession.objects.create(
+        user = user,
+        session_key = secrets.token_urlsafe(32)
+    )
+
+    request.session['session_key'] = session.session_key
 
     return True
 
@@ -74,7 +81,7 @@ def authenticate(phone:str, pin:str, request):
     except ParentUsers.DoesNotExist:
         return None
 
-    if check_password(pin, parent_account.hashed_password):
+    if check_password(pin,parent_account.hashed_password):
         account_session = ParentUserLogginSession.objects.create(
             user = parent_account,
             session_key = secrets.token_urlsafe(32)

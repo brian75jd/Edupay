@@ -6,6 +6,9 @@ window.standardizePhone = function (input) {
   return '+265' + digits;
 };
 
+window
+
+const schoolID = window.location.pathname.split('/').filter(Boolean).pop();
 
 
 const API_ROUTES = {
@@ -284,7 +287,7 @@ function initPayFeesFlow() {
       // Login verifies phone_number + PIN server-side; Create Account
       // registers a new parent record with them. Either way, success
       // moves on to the student details step.
-      await apiFetch(endpoint, { method: 'POST', body: { phone_number: phone, pin } });
+      await apiFetch(endpoint, { method: 'POST', body: { phone_number: phone, pin_code:pin } });
       setText(byId('phoneError'), '');
       goToStep(2);
     } catch (err) {
@@ -323,12 +326,12 @@ function initPayFeesFlow() {
         method: 'POST',
         body: {
           school: selectedSchoolId,
-          student_first_name: window.toTitleCase(getVal(byId('studentFirstName')).trim()),
-          student_last_name: window.toTitleCase(getVal(byId('studentLastName')).trim()),
+          student_first_name: getVal(byId('studentFirstName')).trim(),
+          student_last_name: getVal(byId('studentLastName')).trim(),
           grade: getVal(byId('studentLevel')),
           amount: getVal(byId('feeAmount')).trim(),
           phone_number: parentPhone,
-          school_id: 1
+          school_id: schoolID
         },
       });
       if (result?.checkout_url) {

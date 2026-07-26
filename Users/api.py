@@ -37,10 +37,11 @@ class UserCreationView(APIView):
     @staticmethod
     def post(request,*args, **kwargs):
         try:
+            print(request.data)
             serializer = ParentCreationSerializer(data = request.data)
             serializer.is_valid(raise_exception=True)
 
-            user_created = ParentCreationView(validated_data = serializer.validated_data)
+            user_created = ParentCreationView(request, validated_data = serializer.validated_data)
             if user_created:
                 return Response({
                     'success':True,
