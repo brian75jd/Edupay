@@ -86,11 +86,11 @@ class Payment_Webhook(APIView):
                 return Response({'success':False},status=404)
 
             if resp_status != "success":
-                transaction.status = 'failed'
+                transaction.status = Transaction.STATUS.FAILED
                 transaction.save(update_fields=['status'])
                 return Response(status=200)
 
-            transaction.status = 'success'
+            transaction.status = Transaction.STATUS.SUCCESS
             transaction.save(update_fields=['status'])
 
             return Response(status=200)
