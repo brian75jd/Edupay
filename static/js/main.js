@@ -42,6 +42,7 @@ const getCookie = (name) => {
 };
 
 
+
 tbody = document.getElementById('ht-dash-recent-txns');
 
 
@@ -76,6 +77,7 @@ document.addEventListener('DOMContentLoaded',async ()=>{
     console.warn(error)
   }
 })
+
 
 
 const apiFetch = async (path, { method = 'GET', body } = {}) => {

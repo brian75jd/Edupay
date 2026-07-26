@@ -100,6 +100,21 @@
   text-align: center;
 }
 
+.navbar-school-logo {
+  display: none;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+@media (max-width: 768px) {
+  .navbar-school-info {
+    display: none;
+  }
+  .navbar-school-logo {
+    display: inline;
+  }
+}
+
 body.sidebar-open {
   overflow: hidden;
 }

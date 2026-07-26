@@ -17,20 +17,16 @@
       <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
         <i class="fa-solid fa-bars"></i>
       </button>
-      <a href="/" class="nav-brand">
-        <img src="{% static 'images/logo.png' %}" alt="Edupay" class="nav-brand-img">
-        <div class="nav-brand-text">
-          <span>EduPay <strong>Malawi</strong></span>
-          <small>Pay Fast, Pay Smart</small>
-        </div>
-      </a>
       <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
         <span></span>
         <span></span>
         <span></span>
       </button>
-      <div class="nav-links" id="navLinks">
-        <a href="/">Home</a>
+      <div class="nav-links" id="navLinks" style="flex:1;justify-content:space-between;">
+        <img src="{% static 'images/logo.png' %}" alt="" class="navbar-school-logo">
+        <span class="navbar-school-info" style="font-size:0.85rem;font-weight:500;color:var(--text-secondary);">
+          <span id="ac-dash-sname">—</span> | <span id="ac-dash-sloc">—</span>
+        </span>
       </div>
     </div>
   </nav>
@@ -68,13 +64,6 @@
           <div>
             <h1>Dashboard</h1>
             <p>Welcome back, <span id="ac-dash-welcome">—</span></p>
-          </div>
-          <div class="dashboard-school-badge">
-            <img src="{% static 'images/logo.png' %}" alt="School" class="dashboard-school-logo">
-            <div>
-              <strong id="ac-dash-sname">—</strong>
-              <small id="ac-dash-sloc">—</small>
-            </div>
           </div>
         </div>
 
