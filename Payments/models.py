@@ -22,10 +22,32 @@ class Transaction(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
 
 
+    def __str__(self):
+        return f"{self.id}"
+
+
 
 class Receipt(models.Model):
     id = models.UUIDField(primary_key=True,editable=False,default=uuid.uuid4)
-    transanction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
+    transanction = models.OneToOneField(Transaction, on_delete=models.PROTECT,related_name = 'receipt')
+    receipt_number =models.CharField(
+        max_length=30, unique=True, null=True,blank=True
+    )
+    pdf= models.FileField(upload_to='receipts/',null=True, blank=False)
     created_at = models.DateTimeField(auto_now_add = True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.receipt_number
+
+
+class ReceiptsSequence(models.Model):
+    year = models.PositiveIntegerField(unique=True)
+    current_number = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.year}-{self.current_number}"
     
 
