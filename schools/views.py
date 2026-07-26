@@ -11,8 +11,15 @@ from .serializers import (
     SchoolListSerializer,
     SchoolRegistrationSerializer,
     SchoolStatusUpdateSerializer,
+
 )
 from rest_framework.views import APIView
+import logging
+
+
+
+logger = logging.getLogger(__name__)
+
 
 class SchoolView(APIView):
     def get(self,request,*args,**kwargs):
@@ -32,7 +39,34 @@ class CreateSchoolView(APIView):
     permission_classes =[]
 
     def post(self,request,*args, **kwargs):
-        print(request.data)
+        try:
+            serializer = SchoolRegistrationSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = request.user
+            if not user:
+                return Response({
+                    'success':False,
+                    'detail':'You need to be logged in to perfom this operation'
+                },status=400)
+            
+            School.objects.create(
+                user = user,
+                location = serializer.validated_data.get('location'),
+                name = serializer.validated_data.get('name'),
+                school_type = (serializer.validated_data.get('type')).upper()
+            )
+
+            return Response({
+                'success':True,
+                'message':'School was created'
+            },status=200)
+
+        except Exception:
+            logger.exception()
+            return Response({
+                'success':False,
+                'message':'server error'
+            })
 
 class SchoolViewSet(viewsets.ModelViewSet):
     """
