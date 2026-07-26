@@ -22,7 +22,8 @@ class SchoolListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = School
-        fields = ["id", "name", "postal_address", "logo", "status", "website_url"]
+        fields = ["id", "name", "postal_address", "logo", "status", "website_url",
+                  "school_type", "fee_amount", "email", "phone_numbers"]
 
 
 class SchoolDetailSerializer(serializers.ModelSerializer):

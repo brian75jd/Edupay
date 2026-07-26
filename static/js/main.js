@@ -34,13 +34,7 @@ $(document).ready(function () {
   localStorage.setItem('parentAccounts', JSON.stringify(parentAccounts));
 
   // Seed parent schools
-  if (!localStorage.getItem('parentSchools')) {
-    localStorage.setItem('parentSchools', JSON.stringify([
-      { id: 1, name: "Maranatha Academy", location: "Blantyre", type: "Secondary School", logo: "https://via.placeholder.com/50/1a3a6b/ffffff?text=MA", amount: 120000 },
-      { id: 2, name: "St Andrews Sec.", location: "Lilongwe", type: "Secondary School", logo: "https://via.placeholder.com/50/1a3a6b/ffffff?text=SA", amount: 95000 },
-      { id: 3, name: "Kapeni University", location: "Zomba", type: "University", logo: "https://via.placeholder.com/50/1a3a6b/ffffff?text=KU", amount: 350000 },
-    ]));
-  }
+  // Parent schools are now fetched from the API via parent_school_manager.js
 
   // Seed parent transactions
   if (!localStorage.getItem('parentTransactions')) {

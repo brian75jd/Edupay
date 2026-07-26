@@ -164,6 +164,13 @@ ul {
   color: #fff;
 }
 
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .btn-primary:hover {
   background: var(--primary-hover);
   transform: translateY(-1px);
