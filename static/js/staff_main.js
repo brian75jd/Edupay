@@ -204,8 +204,8 @@ async function init() {
   document.addEventListener("click", async (e) => {
     if (!e.target.closest("#schoolModalSaveBtn")) return;
 
-    const name = document.getElementById("schoolModalName").value.trim();
-    const location = document.getElementById("schoolModalLocation").value.trim();
+    const name = window.toTitleCase(document.getElementById("schoolModalName").value.trim());
+    const location = window.toTitleCase(document.getElementById("schoolModalLocation").value.trim());
     const type = document.getElementById("schoolModalType").value;
     const errorEl = document.getElementById("schoolModalError");
 
@@ -238,8 +238,8 @@ async function init() {
     let editingAccId = null;
 
     document.getElementById("accModalSaveBtn").addEventListener("click", async () => {
-      const fn = document.getElementById("accModalFirstName").value.trim();
-      const ln = document.getElementById("accModalLastName").value.trim();
+    const fn = window.toTitleCase(document.getElementById("accModalFirstName").value.trim());
+    const ln = window.toTitleCase(document.getElementById("accModalLastName").value.trim());
       const em = document.getElementById("accModalEmail").value.trim();
       const ph = document.getElementById("accModalPhone").value.trim();
       const errorEl = document.getElementById("accModalError");
