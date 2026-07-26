@@ -39,12 +39,36 @@ class SchoolDetailSerializer(serializers.ModelSerializer):
 
 
 class SchoolRegistrationSerializer(serializers.Serializer):
-    first_name = serializers.CharField(max_length = 300)
+    name = serializers.CharField(max_length = 300)
+    location = serializers.CharField(max_length=300)
+    type = serializers.CharField(max_length = 50)
 
 
-    def create(self, validated_data):
-        validated_data["status"] = School.Status.PENDING
-        return super().create(validated_data)
+    def validate_name(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                'School name is required'
+            )
+
+        return value
+    
+    def validate_location(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                'Location name is required'
+            )
+
+        return value
+    
+    def validate_name(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                'Type is required'
+            )
+
+        return value
+
+    
 
 
 class SchoolStatusUpdateSerializer(serializers.ModelSerializer):
