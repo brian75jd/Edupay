@@ -318,8 +318,11 @@ function initStaffAuthForms() {
     if (!password || password.length < 6) return setText(byId('loginError'), 'Password must be at least 6 characters');
 
     try {
-      
       const { role } = await apiFetch(API_ROUTES.login, { method: 'POST', body: { phone, password } });
+      try {
+        var me = await apiFetch(API_ROUTES.me);
+        if (window.EDUPAY) window.EDUPAY.safeAssign('user', me);
+      } catch (_) {}
       setText(byId('loginError'), '');
       window.location.href = role === 'headteacher' ? '/school/headteacher/' : '/school/accountant/';
     } catch (err) {
