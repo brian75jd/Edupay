@@ -930,20 +930,6 @@ ul {
   min-height: 18px;
 }
 
-.demo-hint {
-  text-align: center;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-top: 16px;
-}
-
-.demo-hint i {
-  margin-right: 6px;
-}
-
-.demo-hint strong {
-  color: var(--text-primary);
-}
 
 .auth-footer {
   text-align: center;

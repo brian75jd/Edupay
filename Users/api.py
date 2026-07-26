@@ -178,13 +178,17 @@ class StaffMeView(APIView):
             return Response({'detail': 'Not authenticated'}, status=401)
 
         school = School.objects.filter(user=request.user).first()
+        is_headteacher = bool(school)
+        if not school:
+            school = School.objects.filter(accountants=request.user).first()
+
         data = {
             'id': request.user.id,
             'phone': request.user.phone_number,
             'firstName': request.user.first_name,
             'lastName': request.user.last_name,
             'email': request.user.email,
-            'role': 'headteacher' if school else 'accountant',
+            'role': 'headteacher' if is_headteacher else 'accountant',
             'school': None,
         }
         if school:

@@ -17,21 +17,12 @@
       <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
         <i class="fa-solid fa-bars"></i>
       </button>
-      <a href="/" class="nav-brand">
-        <img src="{% static 'images/logo.png' %}" alt="Edupay" class="nav-brand-img">
-        <div class="nav-brand-text">
-          <span>EduPay <strong>Malawi</strong></span>
-          <small>Pay Fast, Pay Smart</small>
-        </div>
-      </a>
       <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
         <span></span>
         <span></span>
         <span></span>
       </button>
       <div class="nav-links" id="navLinks">
-        <a href="/">Home</a>
-        <a href="#" id="logoutLink">Logout</a>
       </div>
     </div>
   </nav>
@@ -62,6 +53,9 @@
         <i class="fa-solid fa-user"></i> <span>Profile</span>
       </a>
     </nav>
+    <div class="sidebar-footer">
+      <a href="#" id="logoutLink"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </div>
   </div>
 
   <section class="dashboard-section">
@@ -177,6 +171,11 @@
               <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody id="ht-acc-table"></tbody>
             </table>
+          </div>
+          <div id="ht-acc-empty" style="display:none;text-align:center;padding:48px 0;">
+            <i class="fa-solid fa-users-slash" style="font-size:48px;color:var(--text-muted);"></i>
+            <p style="margin:16px 0;color:var(--text-muted);font-size:1.1rem;">No accountant found</p>
+            <button class="btn btn-primary" id="addAccountantBtnEmpty"><i class="fa-solid fa-plus"></i> Add Accountant</button>
           </div>
         </div>
       </div>
@@ -338,20 +337,53 @@
     </div>
   </div>
 
+  <!-- View Accountant Modal -->
+  <div class="modal-overlay" id="viewAccModalOverlay"></div>
+  <div class="modal" id="viewAccModal">
+    <div class="modal-header">
+      <h3>Accountant Details</h3>
+      <button class="modal-close modal-close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="profile-card">
+        <div class="profile-field"><span class="profile-label">Name</span><span class="profile-value" id="viewAccName">—</span></div>
+        <div class="profile-field"><span class="profile-label">Email</span><span class="profile-value" id="viewAccEmail">—</span></div>
+        <div class="profile-field"><span class="profile-label">Phone</span><span class="profile-value" id="viewAccPhone">—</span></div>
+        <div class="profile-field"><span class="profile-label">Status</span><span class="profile-value" id="viewAccStatus">—</span></div>
+        <div class="profile-field"><span class="profile-label">Date Joined</span><span class="profile-value" id="viewAccDateJoined">—</span></div>
+        <div class="profile-field"><span class="profile-label">Last Login</span><span class="profile-value" id="viewAccLastLogin">—</span></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary modal-close-btn">Close</button>
+    </div>
+  </div>
+
   <!-- Delete Confirmation Modal -->
   <div class="modal-overlay" id="confirmModalOverlay"></div>
   <div class="modal" id="confirmModal">
     <div class="modal-header">
-      <h3>Confirm Delete</h3>
+      <h3>Delete Accountant</h3>
       <button class="modal-close modal-close-btn">&times;</button>
     </div>
     <div class="modal-body">
-      <p>Are you sure you want to delete <strong id="confirmDeleteName">—</strong>?</p>
-      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:8px;">This action cannot be undone.</p>
+      <div class="profile-card" style="margin-bottom:16px;">
+        <div class="profile-field"><span class="profile-label">Name</span><span class="profile-value" id="confirmDeleteName">—</span></div>
+        <div class="profile-field"><span class="profile-label">Email</span><span class="profile-value" id="confirmDeleteEmail">—</span></div>
+        <div class="profile-field"><span class="profile-label">Phone</span><span class="profile-value" id="confirmDeletePhone">—</span></div>
+        <div class="profile-field"><span class="profile-label">Status</span><span class="profile-value" id="confirmDeleteStatus">—</span></div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:12px;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;color:#856404;">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size:20px;margin-top:2px;flex-shrink:0;"></i>
+        <div>
+          <strong>Warning</strong>
+          <p style="margin:4px 0 0;font-size:0.9rem;">This will permanently remove this accountant's access to all school financial records. This action cannot be undone.</p>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline modal-close-btn">Cancel</button>
-      <button class="btn btn-primary" id="confirmDeleteBtn">Delete</button>
+      <button class="btn btn-primary" id="confirmDeleteBtn" style="background:var(--danger,#dc3545);">Delete</button>
     </div>
   </div>
 
