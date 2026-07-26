@@ -33,8 +33,6 @@
    mechanics changed, not the URL shape)
      GET /static/{role}_content/{tab}.html
    ========================================================================== */
-localStorage.removeItem('transactions');
-console.log(localStorage)
 const API = {
   ME: "/api/auth/me/",
   LOGOUT: "/api/auth/logout/",
@@ -47,12 +45,11 @@ const API = {
 };
 
 async function apiRequest(url, options = {}) {
-  const token = localStorage.getItem("authToken"); // auth token is fine to keep client-side
   const response = await fetch(url, {
     ...options,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
   });
@@ -107,6 +104,36 @@ async function init() {
   };
 
 
+  // ── Fetch user data and populate dashboard ──
+  try {
+    currentUser = await apiRequest(API.ME);
+    if (window.EDUPAY) window.EDUPAY.safeAssign('user', currentUser);
+
+    if (currentUser.role === 'headteacher') role = 'ht';
+    else if (currentUser.role === 'accountant') role = 'ac';
+
+    const el = id => document.getElementById(id);
+
+    if (el('ht-dash-welcome')) el('ht-dash-welcome').textContent = currentUser.firstName || '—';
+    if (el('ht-dash-sname')) el('ht-dash-sname').textContent = currentUser.school?.name || '—';
+    if (el('ht-dash-sloc')) el('ht-dash-sloc').textContent = currentUser.school?.location || '—';
+
+    if (el('ht-school-name')) el('ht-school-name').textContent = currentUser.school?.name || '—';
+    if (el('ht-school-location')) el('ht-school-location').textContent = currentUser.school?.location || '—';
+    if (el('ht-school-type')) el('ht-school-type').textContent = currentUser.school?.type || '—';
+
+    if (el('ht-prof-firstname')) el('ht-prof-firstname').value = currentUser.firstName || '';
+    if (el('ht-prof-lastname')) el('ht-prof-lastname').value = currentUser.lastName || '';
+    if (el('ht-prof-email')) el('ht-prof-email').value = currentUser.email || '';
+    if (el('ht-prof-phone')) el('ht-prof-phone').value = (currentUser.phone || '').replace('+265', '');
+
+    if (role === "ac" && currentUser.must_change_password) {
+      window.location.hash = "profile";
+    }
+  } catch (err) {
+    console.error('Failed to load user data:', err);
+  }
+
   window.fetchTransactions = () => apiRequest(API.TRANSACTIONS);
   window.fetchStudents = () => apiRequest(API.STUDENTS);
 
@@ -130,9 +157,6 @@ async function init() {
       .catch((err) => console.error(`Failed to load tab fragment "${key}":`, err));
   };
 
-  if (role === "ac" && currentUser.must_change_password) {
-    window.location.hash = "profile";
-  }
   const sidebarNav = document.querySelector(".sidebar-nav");
   if (sidebarNav) {
     sidebarNav.addEventListener("click", (e) => {
@@ -166,7 +190,6 @@ async function init() {
       } catch (err) {
         console.error("Logout request failed:", err);
       } finally {
-        localStorage.removeItem("authToken");
         window.location.href = "/";
       }
     });
