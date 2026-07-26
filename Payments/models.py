@@ -33,6 +33,7 @@ class Receipt(models.Model):
     receipt_number =models.CharField(
         max_length=30, unique=True, null=True,blank=True
     )
+    school = models.OneToOneField(School,on_delete=models.PROTECT, null=True, blank=True)
     pdf= models.FileField(upload_to='receipts/',null=True, blank=False)
     created_at = models.DateTimeField(auto_now_add = True)
 
@@ -51,3 +52,15 @@ class ReceiptsSequence(models.Model):
         return f"{self.year}-{self.current_number}"
     
 
+
+
+
+class LedgerEntry(models.Model):
+    id = models.UUIDField(primary_key = True, editable = False,default=uuid.uuid4)
+    amount_sent = models.DecimalField(default=0, decimal_places=2,max_digits=2)
+    school = models.ForeignKey(School, on_delete=models.PROTECT, related_name='entries')
+    transanction = models.OneToOneField(Transaction, on_delete=models.PROTECT)
+    trans_fee = models.DecimalField(default=0, decimal_places=2,max_digits=2)
+    user = models.ForeignKey(ParentUsers,on_delete=models.CASCADE,related_name='entries')
+
+    issued_at = models.DateTimeField(auto_now_add=True)

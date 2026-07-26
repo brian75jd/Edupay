@@ -11,7 +11,7 @@ from Payments.serializers import (
     View404ResponseSerializer,
     PaymentUserCredentials
 )
-from Payments.models import Transaction,ReceiptsSequence,Receipt
+from Payments.models import Transaction,Receipt,LedgerEntry
 from Payments.services.Payments import PaychanguInitiatePayment
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -19,7 +19,7 @@ from rest_framework.permissions import AllowAny
 from Payments.services.utils import verify_signature
 from Payments.services.Exceptions import PayChanguWebhookException
 from Payments.permissions import HasSessionKey
-from Payments.services.receipts import ReceiptGenerator
+from Payments.services.receipts import ReceiptGenerator, ReceiptPDF
 
 logger = logging.getLogger(__name__)
 
@@ -93,12 +93,23 @@ class Payment_Webhook(APIView):
             transaction.status = Transaction.STATUS.SUCCESS
             transaction.save(update_fields=['status'])
 
-            receipt = Receipt.objects.create(
+
+            LedgerEntry.objects.create(
+                amount_sent = transaction.amount,
                 transanction = transaction,
-                receipt_number = ReceiptGenerator.generate_receipt()
+                trans_fee = transaction.trans_fee,
+                user = transaction.user,
+                school = transaction.school
             )
 
+            receipt = Receipt.objects.create(
+                transanction = transaction,
+                receipt_number = ReceiptGenerator.generate_ref()
+            )
+            ReceiptPDF.generate_receipt(receipt=receipt)
+
             return Response(status=200)
+        
 
         except Exception as exp:
             logger.exception('ERROR: ')
