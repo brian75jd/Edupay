@@ -74,6 +74,32 @@
   color: #fff;
 }
 
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px;
+  border-top: 1px solid var(--border);
+}
+.sidebar-footer a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.sidebar-footer a:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+.sidebar-footer a i {
+  width: 20px;
+  text-align: center;
+}
+
 body.sidebar-open {
   overflow: hidden;
 }

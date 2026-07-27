@@ -1,6 +1,9 @@
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 
 from .models import PaymentMethod, School
+
+User = get_user_model()
 
 
 class PaymentMethodSerializer(serializers.ModelSerializer):
@@ -77,3 +80,18 @@ class SchoolStatusUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = School
         fields = ["status"]
+
+
+class AccountantSerializer(serializers.ModelSerializer):
+    firstName = serializers.CharField(source='first_name')
+    lastName = serializers.CharField(source='last_name')
+    phone = serializers.CharField(source='phone_number')
+    dateJoined = serializers.DateTimeField(source='date_joined')
+    lastLogin = serializers.DateTimeField(source='last_login')
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'firstName', 'lastName', 'email', 'phone',
+            'is_active', 'dateJoined', 'lastLogin',
+        ]

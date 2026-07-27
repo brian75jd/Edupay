@@ -286,8 +286,8 @@ function initPayFeesFlow() {
         method: 'POST',
         body: {
           school: selectedSchoolId,
-          student_first_name: getVal(byId('studentFirstName')).trim(),
-          student_last_name: getVal(byId('studentLastName')).trim(),
+          student_first_name: window.toTitleCase(getVal(byId('studentFirstName')).trim()),
+          student_last_name: window.toTitleCase(getVal(byId('studentLastName')).trim()),
           grade: getVal(byId('studentLevel')),
           amount: getVal(byId('feeAmount')).trim(),
           phone_number: parentPhone,
@@ -332,8 +332,8 @@ function initStaffAuthForms() {
 
   on(byId('headteacherSignupForm'), 'submit', async (e) => {
     e.preventDefault();
-    const firstName = getVal(byId('htFirstName')).trim();
-    const lastName = getVal(byId('htLastName')).trim();
+    const firstName = window.toTitleCase(getVal(byId('htFirstName')).trim());
+    const lastName = window.toTitleCase(getVal(byId('htLastName')).trim());
     const email = getVal(byId('htEmail')).trim();
     const phone = window.standardizePhone(getVal(byId('htPhone')));
     const password = getVal(byId('htPassword'));
@@ -364,8 +364,8 @@ function initStaffAuthForms() {
   on(byId('createSchoolForm'), 'submit', async (e) => {
     e.preventDefault();
     console.log('Running again')
-    const name = getVal(byId('schoolName')).trim();
-    const location = getVal(byId('schoolLocation')).trim();
+    const name = window.toTitleCase(getVal(byId('schoolName')).trim());
+    const location = window.toTitleCase(getVal(byId('schoolLocation')).trim());
     const type = getVal(byId('schoolType'));
 
     if (!name) return setText(byId('createSchoolError'), 'Please enter the school name');
@@ -383,8 +383,8 @@ function initStaffAuthForms() {
 
   on(byId('addAccountantForm'), 'submit', async (e) => {
     e.preventDefault();
-    const firstName = getVal(byId('accFirstName')).trim();
-    const lastName = getVal(byId('accLastName')).trim();
+    const firstName = window.toTitleCase(getVal(byId('accFirstName')).trim());
+    const lastName = window.toTitleCase(getVal(byId('accLastName')).trim());
     const email = getVal(byId('accEmail')).trim();
     const phone = getVal(byId('accPhone')).trim();
 
@@ -503,8 +503,8 @@ function initDashboardSpa() {
       setText(byId('schoolError'), '');
     });
     on(byId('schoolSaveBtn'), 'click', async () => {
-      const name = getVal(byId('schoolName')).trim();
-      const location = getVal(byId('schoolLocation')).trim();
+      const name = window.toTitleCase(getVal(byId('schoolName')).trim());
+      const location = window.toTitleCase(getVal(byId('schoolLocation')).trim());
       const type = getVal(byId('schoolType'));
       if (!name || !location || !type) return setText(byId('schoolError'), 'Please fill in all fields');
 
@@ -571,8 +571,8 @@ function initDashboardSpa() {
     });
 
     on(byId('accModalSaveBtn'), 'click', async () => {
-      const firstName = getVal(byId('accModalFirstName')).trim();
-      const lastName = getVal(byId('accModalLastName')).trim();
+      const firstName = window.toTitleCase(getVal(byId('accModalFirstName')).trim());
+      const lastName = window.toTitleCase(getVal(byId('accModalLastName')).trim());
       const email = getVal(byId('accModalEmail')).trim();
       const phone = getVal(byId('accModalPhone')).trim();
 
@@ -676,8 +676,8 @@ function initDashboardSpa() {
     setText(byId(`${prefix}PasswordError`), '');
 
     on(byId(`${prefix}SaveBtn`), 'click', async () => {
-      const firstName = getVal(byId(`${prefix}FirstName`)).trim();
-      const lastName = getVal(byId(`${prefix}LastName`)).trim();
+      const firstName = window.toTitleCase(getVal(byId(`${prefix}FirstName`)).trim());
+      const lastName = window.toTitleCase(getVal(byId(`${prefix}LastName`)).trim());
       const email = getVal(byId(`${prefix}Email`)).trim();
       const phone = getVal(byId(`${prefix}Phone`)).trim();
       if (!firstName || !lastName || !email || !phone || phone.length < 9) {
