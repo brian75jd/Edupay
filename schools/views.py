@@ -100,8 +100,6 @@ class SchoolViewSet(viewsets.ModelViewSet):
         qs = School.objects.all()
         user = self.request.user
         is_staff_user = bool(user and user.is_authenticated and user.is_staff)
-        # Public listing only ever surfaces approved schools; staff can see everything
-        # (including pending/denied/suspended) for moderation and support.
         if self.action == "list" and not is_staff_user:
             qs = qs.filter(status=School.Status.APPROVED)
         return qs
@@ -116,18 +114,13 @@ class SchoolViewSet(viewsets.ModelViewSet):
         return SchoolDetailSerializer
 
     def get_permissions(self):
-        # Registering a school requires an account (headteacher/accountant),
-        # but doesn't require staff privileges. Everything else follows
-        # IsAdminOrReadOnly.
+
         if self.action == "create":
             return [IsAuthenticated()]
         return super().get_permissions()
 
     def perform_create(self, serializer):
-        # The school starts as 'pending' (enforced in the serializer) until
-        # an EduPay admin manually reviews the uploaded official_document
-        # and approves it. The registering user is linked to the new school
-        # so they become its headteacher/accountant.
+
         school = serializer.save()
         user = self.request.user
         if hasattr(user, "school"):
