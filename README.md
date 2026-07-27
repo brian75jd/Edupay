@@ -85,7 +85,7 @@ Models
 └── Student
 ```
 
-Business logic has been separated into service classes to improve maintainability and readability.
+Business logic has been separated into service classes to improveve maintainability and readability.
 
 ---
 
@@ -242,4 +242,4 @@ services/
 - Docker support
 
 ---
-
+![image](https://github.com/brian75jd/Edupay/blob/f241cfbf112d9b895eb2ac11c8fab48d2ba26a2f/Screenshot_20260727_080535_com.android.chrome.jpg)
