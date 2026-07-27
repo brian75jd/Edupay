@@ -43,10 +43,11 @@ const getCookie = (name) => {
 
 
 
-tbody = document.getElementById('ht-dash-recent-txns');
+
 
 
 document.addEventListener('DOMContentLoaded',async ()=>{
+  if (!document.getElementById('ht-dash-revenue')) return;
   try {
     const response = await fetch(API_ROUTES.transactions,{
       method:"GET"
@@ -868,4 +869,3 @@ function initDashboardSpa() {
   })();
 }
 
-document.addEventListener('DOMContentLoaded',populateHtTransactions())

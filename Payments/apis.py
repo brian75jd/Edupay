@@ -153,7 +153,9 @@ class SchoolDetailView(APIView):
     permission_classes =[]
 
     def get(self,request,*args,**kwargs):
-        school = School.objects.get(user = request.user)
+        school = School.objects.filter(Q(user=request.user) | Q(accountants=request.user)).first()
+        if not school:
+            return Response({'detail': 'No school found for this user'}, status=400)
         transactions = Transaction.objects.filter(
             school = school
         )
