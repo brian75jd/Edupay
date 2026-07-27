@@ -81,6 +81,7 @@ def authenticate(phone:str, pin:str, request):
         )
 
         request.session['session_key'] = account_session.session_key
+        request.session.save()
 
         return True
     
