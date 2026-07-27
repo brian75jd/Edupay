@@ -243,3 +243,5 @@ services/
 
 ---
 
+#EasyPay hosting link
+https://edupay-dgbc.onrender.com
