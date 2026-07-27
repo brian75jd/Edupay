@@ -257,3 +257,5 @@ Since the current hosting platform has issues rendering schools on the landing p
 
 ![image](https://github.com/brian75jd/Edupay/blob/7a4ed70f82cf65e2fd0c581755a1960d70d931dd/Screenshot_20260727_080735_com.android.chrome.jpg)
 
+
+![image](https://github.com/brian75jd/Edupay/blob/838cb96874482b3e3c38662f8d35ebb3644ce323/Screenshot_20260727_091842.jpg) 
