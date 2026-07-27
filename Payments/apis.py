@@ -7,6 +7,7 @@ from drf_spectacular.utils import (
     extend_schema,
   
 )
+
 from django.db.models.functions import Coalesce
 from decimal import Decimal
 from Payments.serializers import (
@@ -21,7 +22,7 @@ from Payments.models import Transaction,Receipt,LedgerEntry
 from Payments.services.Payments import PaychanguInitiatePayment
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAuthenticated
 from Payments.services.utils import verify_signature
 from Payments.services.Exceptions import PayChanguWebhookException
 from Payments.permissions import HasSessionKey
@@ -150,7 +151,7 @@ def get_receipt(request,*args,**kwargs):
 
 
 class SchoolDetailView(APIView):
-    permission_classes =[]
+    permission_classes =[IsAuthenticated]
 
     def get(self,request,*args,**kwargs):
         school = School.objects.filter(Q(user=request.user) | Q(accountants=request.user)).first()
