@@ -2,7 +2,7 @@
 
 ## Overview
 
-EasyPay is a digital school fee payment platform developed for the National Bank of Malawi Hackathon.
+EduPay is a digital school fee payment platform developed for the National Bank of Malawi Hackathon.
 
 The platform enables parents and guardians to pay school fees online using supported payment methods without physically visiting a bank or the school accounts office.
 
@@ -91,13 +91,13 @@ Business logic has been separated into service classes to improveve maintainabil
 
 # Payment Flow
 
-1. Parent selects a student.
-2. Parent enters payment details.
-3. EasyPay creates a pending payment.
+1. Parent logs into Edupay .
+2. Parent enters student details.
+3. Edupay creates a pending payment.
 4. Parent is redirected to the hosted PayChangu checkout page.
 5. Parent completes payment.
 6. PayChangu sends a webhook.
-7. EasyPay verifies the payment.
+7. EduPay verifies the payment.
 8. Payment status is updated.
 9. A receipt number is generated.
 10. A PDF receipt is generated.
@@ -261,9 +261,11 @@ Since the current hosting platform has issues rendering schools on the landing p
 ![image](https://github.com/brian75jd/Edupay/blob/838cb96874482b3e3c38662f8d35ebb3644ce323/Screenshot_20260727_091842.jpg)
 
 # Team Members 
-Joseph Wella
-Joyce Mwase 
-Brian Bingala 
-Ephraim Nkhoma 
-Mayamiko Chabvi 
+1.Joseph Wella
+2.Joyce Mwase 
+3.Brian Bingala 
+4.Ephraim Nkhoma 
+5.Mayamiko Chabvi 
 
+# AI Usage 
+AI was used in code structure analysis and reasoning
