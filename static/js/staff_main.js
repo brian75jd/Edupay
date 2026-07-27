@@ -244,6 +244,36 @@ async function init() {
     }
   };
 
+  window.refreshHtSchool = async function () {
+    var sname = document.getElementById("ht-school-name");
+    if (!sname) return;
+    try {
+      var resp = await apiRequest(API.SCHOOL_INFO);
+      var setText = function (id, val) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = val || "—";
+      };
+      setText("ht-school-name", resp.name);
+      setText("ht-school-address", resp.postal_address);
+      setText("ht-school-email", resp.email);
+      setText("ht-school-phone", resp.phone_numbers ? resp.phone_numbers.join(", ") : "—");
+      setText("ht-school-location", resp.location);
+      setText("ht-school-type", resp.school_type ? window.toTitleCase(resp.school_type.replace(/_/g, " ")) : "—");
+      setText("ht-school-fee", resp.fee_amount ? "MWK " + Number(resp.fee_amount).toLocaleString() : "—");
+      setText("ht-school-website", resp.website_url || "—");
+      var status = resp.status || "—";
+      if (resp.status) {
+        var statusColors = { approved: "var(--success)", pending: "var(--warning)", denied: "var(--danger)", suspended: "var(--danger)" };
+        status = '<span style="color:' + (statusColors[resp.status] || "inherit") + ';font-weight:600;">' + window.toTitleCase(resp.status) + "</span>";
+      }
+      setText("ht-school-status", "");
+      var statusEl = document.getElementById("ht-school-status");
+      if (statusEl) statusEl.innerHTML = status;
+    } catch (err) {
+      console.error("Failed to load school info:", err);
+    }
+  };
+
   window.refreshAcTransactions = async function () {
     try {
       var from = document.getElementById("ac-txn-from");
@@ -315,6 +345,9 @@ async function init() {
       })
       .catch((err) => console.error(`Failed to load tab fragment "${key}":`, err));
 
+    if (key === "school") {
+      window.refreshHtSchool();
+    }
     if (key === "accountants") {
       window.refreshHtAccountants();
     }

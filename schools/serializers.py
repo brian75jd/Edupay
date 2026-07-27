@@ -36,44 +36,42 @@ class SchoolDetailSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "logo",
-            'location',
-            'postal_address',
-            'fee_amount'
-
+            "location",
+            "postal_address",
+            "email",
+            "phone_numbers",
+            "school_type",
+            "status",
+            "website_url",
+            "fee_amount",
         ]
 
 
 class SchoolRegistrationSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length = 300)
+    name = serializers.CharField(max_length=300)
     location = serializers.CharField(max_length=300)
-    type = serializers.CharField(max_length = 50)
+    type = serializers.CharField(max_length=50)
+    postal_address = serializers.CharField(max_length=255)
+    email = serializers.EmailField()
+    phone = serializers.CharField(max_length=15, required=False, allow_blank=True)
+    official_document = serializers.FileField()
+    fee_amount = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
 
 
     def validate_name(self, value):
         if not value:
-            raise serializers.ValidationError(
-                'School name is required'
-            )
-
+            raise serializers.ValidationError('School name is required')
         return value
     
     def validate_location(self, value):
         if not value:
-            raise serializers.ValidationError(
-                'Location name is required'
-            )
-
+            raise serializers.ValidationError('Location is required')
         return value
     
-    def validate_name(self, value):
+    def validate_type(self, value):
         if not value:
-            raise serializers.ValidationError(
-                'Type is required'
-            )
-
+            raise serializers.ValidationError('Type is required')
         return value
-
-    
 
 
 class SchoolStatusUpdateSerializer(serializers.ModelSerializer):

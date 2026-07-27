@@ -398,17 +398,42 @@ function initStaffAuthForms() {
 
   on(byId('createSchoolForm'), 'submit', async (e) => {
     e.preventDefault();
-    console.log('Running again')
     const name = window.toTitleCase(getVal(byId('schoolName')).trim());
+    const postalAddress = window.toTitleCase(getVal(byId('schoolPostalAddress')).trim());
+    const email = getVal(byId('schoolEmail')).trim();
+    const phoneRaw = getVal(byId('schoolPhone')).trim();
+    const phone = phoneRaw ? window.standardizePhone(phoneRaw) : '';
     const location = window.toTitleCase(getVal(byId('schoolLocation')).trim());
     const type = getVal(byId('schoolType'));
+    const feeAmount = getVal(byId('schoolFeeAmount')).trim();
+    const docFile = byId('schoolDocument').files[0];
 
     if (!name) return setText(byId('createSchoolError'), 'Please enter the school name');
+    if (!postalAddress) return setText(byId('createSchoolError'), 'Please enter the postal address');
+    if (!email) return setText(byId('createSchoolError'), 'Please enter the school email');
+    if (phoneRaw && !phone) return setText(byId('createSchoolError'), 'Enter a valid phone number');
     if (!location) return setText(byId('createSchoolError'), 'Please enter the school location');
     if (!type) return setText(byId('createSchoolError'), 'Please select the school type');
+    if (!docFile) return setText(byId('createSchoolError'), 'Please upload the business registration document');
 
     try {
-      await apiFetch(API_ROUTES.schools, { method: 'POST', body: { name, location, type } });
+      const fd = new FormData();
+      fd.append('name', name);
+      fd.append('postal_address', postalAddress);
+      fd.append('email', email);
+      if (phone) fd.append('phone', phone);
+      fd.append('location', location);
+      fd.append('type', type);
+      if (feeAmount) fd.append('fee_amount', feeAmount);
+      fd.append('official_document', docFile);
+
+      const res = await fetch(API_ROUTES.schools, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') },
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || data.message || 'Failed to create school');
       setText(byId('createSchoolError'), '');
       window.location.href = '/school/headteacher/';
     } catch (err) {

@@ -58,11 +58,17 @@ class CreateSchoolView(APIView):
                     'detail':'You need to be logged in to perfom this operation'
                 },status=400)
             
+            phone = serializer.validated_data.get('phone', '')
             School.objects.create(
-                user = user,
-                location = serializer.validated_data.get('location'),
-                name = serializer.validated_data.get('name'),
-                school_type = (serializer.validated_data.get('type')).upper()
+                user=user,
+                name=serializer.validated_data['name'],
+                location=serializer.validated_data['location'],
+                school_type=serializer.validated_data['type'].upper(),
+                postal_address=serializer.validated_data['postal_address'],
+                email=serializer.validated_data['email'],
+                phone_numbers=[phone] if phone else [],
+                fee_amount=serializer.validated_data.get('fee_amount', 0),
+                official_document=request.FILES['official_document'],
             )
 
             return Response({
@@ -276,6 +282,39 @@ class AccountantView(APIView):
         school.accountants.remove(user)
         user.delete()
         return Response(status=204)
+
+
+class SchoolMeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_school(self, request):
+        school = School.objects.filter(user=request.user).first()
+        if not school:
+            school = School.objects.filter(accountants=request.user).first()
+        return school
+
+    def get(self, request):
+        school = self.get_school(request)
+        if not school:
+            return Response({'detail': 'No school found for this user'}, status=400)
+        data = SchoolDetailSerializer(school).data
+        if school.logo:
+            data['logo'] = request.build_absolute_uri(school.logo.url)
+        return Response(data)
+
+    def patch(self, request):
+        school = School.objects.filter(user=request.user).first()
+        if not school:
+            return Response({'detail': 'Only the headteacher can update school info'}, status=403)
+        for field in ('name', 'location', 'postal_address', 'email', 'website_url', 'fee_amount'):
+            if field in request.data:
+                setattr(school, field, request.data[field])
+        if 'school_type' in request.data:
+            school.school_type = request.data['school_type'].lower()
+        if 'phone' in request.data:
+            school.phone_numbers = [request.data['phone']]
+        school.save()
+        return Response(SchoolDetailSerializer(school).data)
 
 
 class StudentsView(APIView):

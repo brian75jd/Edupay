@@ -11,3 +11,4 @@ app.log
 static
 school_documents
 media
+db.sqlite3

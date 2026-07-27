@@ -44,10 +44,28 @@
       <div class="form-section">
         <h3 class="form-section-title">School Details</h3>
 
-        <form class="auth-form" id="createSchoolForm" novalidate>
+        <form class="auth-form" id="createSchoolForm" novalidate enctype="multipart/form-data">
           <div class="form-group">
             <label class="form-label">School Name</label>
             <input type="text" class="form-input" id="schoolName" placeholder="Enter school name" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Postal Address</label>
+            <input type="text" class="form-input" id="schoolPostalAddress" placeholder="e.g. P.O. Box 1234" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="schoolEmail" placeholder="Enter school email" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <div class="auth-phone-group">
+              <span class="auth-phone-prefix">+265</span>
+              <input type="tel" class="form-input auth-phone-input" id="schoolPhone" placeholder="Enter phone number" maxlength="9">
+            </div>
           </div>
 
           <div class="form-group">
@@ -57,13 +75,24 @@
 
           <div class="form-group">
             <label class="form-label">School Type</label>
-            <select class="form-select" id="schoolType">
+            <select class="form-select" id="schoolType" required>
               <option value="" disabled selected>Select school type</option>
               <option value="primary">Primary School</option>
               <option value="secondary">Secondary School</option>
               <option value="university">University</option>
               <option value="college">College</option>
             </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Fee Amount (MWK)</label>
+            <input type="number" class="form-input" id="schoolFeeAmount" placeholder="e.g. 50000" min="0" step="0.01">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Business Registration / Official Document</label>
+            <input type="file" class="form-input" id="schoolDocument" accept="image/*,application/pdf" required>
+            <small style="color:var(--text-muted);display:block;margin-top:4px;">Upload your school's business registration certificate or official license (image or PDF).</small>
           </div>
 
           <div class="form-error" id="createSchoolError"></div>
@@ -76,6 +105,7 @@
   </section>
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="{% static 'js/data_cache.js' %}"></script>
   <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>
