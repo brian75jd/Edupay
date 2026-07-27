@@ -13,13 +13,15 @@ DEBUG = False
 ALLOWED_HOSTS = [
     'localhost',
     'kaylin-plumbic-luana.ngrok-free.dev',
-    'edupay-dgbc.onrender.com'
+    'edupay-dgbc.onrender.com',
+    'edupay-production-aba4.up.railway.app',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://kaylin-plumbic-luana.ngrok-free.dev',
     'http://localhost:8000',
-    'https://edupay-dgbc.onrender.com'
+    'https://edupay-dgbc.onrender.com',
+    'https://edupay-production-aba4.up.railway.app/'
 ]
 
 
