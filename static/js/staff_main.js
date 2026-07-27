@@ -44,14 +44,23 @@ const API = {
   TAB_FRAGMENT: (role, key) => `/static/${role}_content/${key}.html`,
 };
 
+function getCSRFToken() {
+  var match = document.cookie.match(/csrftoken=([^;]+)/);
+  return match ? match[1] : '';
+}
+
 async function apiRequest(url, options = {}) {
+  var method = (options.method || 'GET').toUpperCase();
+  var headers = { "Content-Type": "application/json" };
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].indexOf(method) !== -1) {
+    headers['X-CSRFToken'] = getCSRFToken();
+  }
+  Object.assign(headers, options.headers || {});
+
   const response = await fetch(url, {
     ...options,
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
+    headers: headers,
   });
 
   if (!response.ok) {
@@ -301,7 +310,7 @@ async function init() {
       }
       errorEl.textContent = "";
 
-      const payload = { first_name: fn, last_name: ln, email: em, phone: ph };
+      const payload = { firstName: fn, lastName: ln, email: em, phone: ph };
 
       try {
         if (editingAccId) {
