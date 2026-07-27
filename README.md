@@ -85,7 +85,7 @@ Models
 └── Student
 ```
 
-Business logic has been separated into service classes to improve maintainability and readability.
+Business logic has been separated into service classes to improveve maintainability and readability.
 
 ---
 
@@ -242,6 +242,18 @@ services/
 - Docker support
 
 ---
+![image](https://github.com/brian75jd/Edupay/blob/f241cfbf112d9b895eb2ac11c8fab48d2ba26a2f/Screenshot_20260727_080535_com.android.chrome.jpg)
+
 
 #EasyPay hosting link
 https://edupay-dgbc.onrender.com
+
+Since the current hosting platform has issues rendering schools on the landing page, readers are adviced to natigate to https://edupay-dgbc.onrender.com/pay-fees/1/ to experience the full logic
+
+
+![image] (https://github.com/brian75jd/Edupay/blob/b2223bff5be4f85723726840903fce8f18882ef3/Screenshot_20260727_080747_com.android.chrome.jpg) 
+
+![image](https://github.com/brian75jd/Edupay/blob/983426162f2d3f511e82fe0d6d407b0e29095630/Screenshot_20260727_080735_com.android.chrome.jpg) 
+
+![image](https://github.com/brian75jd/Edupay/blob/7a4ed70f82cf65e2fd0c581755a1960d70d931dd/Screenshot_20260727_080735_com.android.chrome.jpg)
+
