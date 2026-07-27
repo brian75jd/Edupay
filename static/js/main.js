@@ -6,6 +6,8 @@ window.standardizePhone = function (input) {
   return '+265' + digits;
 };
 
+
+
 const API_ROUTES = {
   login: '/api/auth/login/',
   logout: '/api/auth/logout/',
