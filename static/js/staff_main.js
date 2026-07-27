@@ -136,6 +136,53 @@ async function init() {
 
   window.fetchTransactions = () => apiRequest(API.TRANSACTIONS);
   window.fetchStudents = () => apiRequest(API.STUDENTS);
+  window.fetchAccountants = () => apiRequest(API.ACCOUNTANTS);
+
+  window.refreshHtAccountants = async function () {
+    try {
+      var accountants = await window.fetchAccountants();
+      var tbody = document.getElementById("ht-acc-table");
+      var empty = document.getElementById("ht-acc-empty");
+      if (!tbody) return;
+
+      if (!accountants || accountants.length === 0) {
+        tbody.innerHTML = "";
+        if (empty) empty.style.display = "block";
+        return;
+      }
+
+      if (empty) empty.style.display = "none";
+
+      tbody.innerHTML = accountants.map(function (a) {
+        var st = a.is_active ? "Active" : "Inactive";
+        return "<tr>" +
+          "<td>" + (a.firstName || "") + " " + (a.lastName || "") + "</td>" +
+          "<td>" + (a.email || "—") + "</td>" +
+          "<td>+265 " + (a.phone || "") + "</td>" +
+          "<td>" + (typeof window.statusBadge === "function" ? window.statusBadge(st) : st) + "</td>" +
+          "<td>" +
+            '<button class="btn btn-sm btn-outline acc-view-btn" data-id="' + a.id +
+              '" data-firstname="' + (a.firstName || "") +
+              '" data-lastname="' + (a.lastName || "") +
+              '" data-email="' + (a.email || "") +
+              '" data-phone="' + (a.phone || "") +
+              '" data-status="' + st +
+              '" data-datejoined="' + (a.dateJoined || "") +
+              '" data-lastlogin="' + (a.lastLogin || "") +
+              '" style="margin-right:6px;"><i class="fa-solid fa-eye"></i> View</button>' +
+            '<button class="btn btn-sm btn-outline acc-delete-btn" data-id="' + a.id +
+              '" data-name="' + (a.firstName || "") + " " + (a.lastName || "") +
+              '" data-email="' + (a.email || "") +
+              '" data-phone="' + (a.phone || "") +
+              '" data-status="' + st +
+              '"><i class="fa-solid fa-trash"></i> Delete</button>' +
+          "</td>" +
+        "</tr>";
+      }).join("");
+    } catch (err) {
+      console.error("Failed to load accountants:", err);
+    }
+  };
 
    window.loadTab = function (key) {
     document.querySelectorAll(".dashboard-panel").forEach((el) => (el.style.display = "none"));
@@ -155,6 +202,10 @@ async function init() {
         if (panel) panel.insertAdjacentHTML("beforeend", html);
       })
       .catch((err) => console.error(`Failed to load tab fragment "${key}":`, err));
+
+    if (key === "accountants") {
+      window.refreshHtAccountants();
+    }
   };
 
   const sidebarNav = document.querySelector(".sidebar-nav");
@@ -333,10 +384,47 @@ async function init() {
 
       const id = btn.dataset.id;
       const name = btn.dataset.name;
+      const email = btn.dataset.email || '—';
+      const phone = btn.dataset.phone || '—';
+      const st = btn.dataset.status || '—';
       document.getElementById("confirmDeleteName").textContent = name;
+      document.getElementById("confirmDeleteEmail").textContent = email;
+      document.getElementById("confirmDeletePhone").textContent = '+265 ' + phone;
+      document.getElementById("confirmDeleteStatus").innerHTML = typeof window.statusBadge === 'function' ? window.statusBadge(st) : st;
       document.getElementById("confirmDeleteBtn").dataset.accountantId = id;
       document.getElementById("confirmModal")?.classList.add("open");
       document.getElementById("confirmModalOverlay")?.classList.add("open");
+    });
+
+    // View accountant details modal
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest(".acc-view-btn");
+      if (!btn) return;
+
+      var el = function (id) { return document.getElementById(id); };
+
+      el("viewAccName").textContent = (btn.dataset.firstname || "") + " " + (btn.dataset.lastname || "");
+      el("viewAccEmail").textContent = btn.dataset.email || "—";
+      el("viewAccPhone").textContent = "+265 " + (btn.dataset.phone || "");
+      el("viewAccStatus").innerHTML = typeof window.statusBadge === "function" ? window.statusBadge(btn.dataset.status || "") : (btn.dataset.status || "—");
+      el("viewAccDateJoined").textContent = btn.dataset.datejoined ? new Date(btn.dataset.datejoined).toLocaleDateString() : "—";
+      el("viewAccLastLogin").textContent = btn.dataset.lastlogin ? new Date(btn.dataset.lastlogin).toLocaleDateString() : "Never";
+
+      el("viewAccModal")?.classList.add("open");
+      el("viewAccModalOverlay")?.classList.add("open");
+    });
+
+    // Empty state add accountant button
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("#addAccountantBtnEmpty")) return;
+      editingAccId = null;
+      document.getElementById("accountantModalTitle").textContent = "Add Accountant";
+      ["accModalFirstName", "accModalLastName", "accModalEmail", "accModalPhone"].forEach(
+        function (id) { document.getElementById(id).value = ""; }
+      );
+      document.getElementById("accModalError").textContent = "";
+      document.getElementById("accountantModal")?.classList.add("open");
+      document.getElementById("accountantModalOverlay")?.classList.add("open");
     });
   }
 }

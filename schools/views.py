@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -5,7 +6,14 @@ from rest_framework.response import Response
 
 from .models import PaymentMethod, School
 from .permissions import IsAdminOrReadOnly
+from django.contrib.auth.hashers import make_password
+import secrets
+import string
+import phonenumbers
+
+User = get_user_model()
 from .serializers import (
+    AccountantSerializer,
     PaymentMethodSerializer,
     SchoolDetailSerializer,
     SchoolListSerializer,
@@ -145,3 +153,124 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = [filters.SearchFilter]
     search_fields = ["school__name", "provider", "account_no"]
+
+
+class AccountantView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_school(self, request):
+        school = School.objects.filter(user=request.user).first()
+        if not school:
+            school = School.objects.filter(accountants=request.user).first()
+        return school
+
+    def get(self, request, pk=None):
+        if pk:
+            return self.retrieve(request, pk)
+        return self.list(request)
+
+    def post(self, request):
+        return self.create(request)
+
+    def patch(self, request, pk=None):
+        return self.update(request, pk)
+
+    def delete(self, request, pk=None):
+        return self.destroy(request, pk)
+
+    def list(self, request):
+        school = self.get_school(request)
+        if not school:
+            return Response({'detail': 'No school found for this user'}, status=400)
+        accountants = school.accountants.all()
+        serializer = AccountantSerializer(accountants, many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
+        first_name = request.data.get('firstName', '').strip()
+        last_name = request.data.get('lastName', '').strip()
+        email = request.data.get('email', '').strip()
+        phone = request.data.get('phone', '').strip()
+
+        if not all([first_name, last_name, email, phone]):
+            return Response({'detail': 'All fields are required'}, status=400)
+
+        try:
+            parsed = phonenumbers.parse(phone, 'MW')
+            phone = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+        except phonenumbers.NumberParseException:
+            return Response({'detail': 'Invalid phone number'}, status=400)
+
+        if User.objects.filter(phone_number=phone).exists():
+            return Response({'detail': 'An account with this phone number already exists'}, status=400)
+
+        default_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(10))
+
+        user = User.objects.create_user(
+            username=first_name.lower() + str(User.objects.count()),
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            phone_number=phone,
+            password=default_password,
+        )
+
+        school = School.objects.filter(user=request.user).first()
+        if school:
+            school.accountants.add(user)
+
+        serializer = AccountantSerializer(user)
+        data = serializer.data
+        data['default_password'] = default_password
+        return Response(data, status=201)
+
+    def retrieve(self, request, pk):
+        school = self.get_school(request)
+        if not school:
+            return Response({'detail': 'No school found for this user'}, status=400)
+        try:
+            user = school.accountants.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({'detail': 'Accountant not found'}, status=404)
+        serializer = AccountantSerializer(user)
+        return Response(serializer.data)
+
+    def update(self, request, pk):
+        school = self.get_school(request)
+        if not school:
+            return Response({'detail': 'No school found for this user'}, status=400)
+        try:
+            user = school.accountants.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({'detail': 'Accountant not found'}, status=404)
+
+        if 'firstName' in request.data:
+            user.first_name = request.data['firstName'].strip()
+        if 'lastName' in request.data:
+            user.last_name = request.data['lastName'].strip()
+        if 'email' in request.data:
+            user.email = request.data['email'].strip()
+        if 'phone' in request.data:
+            phone = request.data['phone'].strip()
+            try:
+                parsed = phonenumbers.parse(phone, 'MW')
+                phone = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+            except phonenumbers.NumberParseException:
+                return Response({'detail': 'Invalid phone number'}, status=400)
+            user.phone_number = phone
+        user.save()
+
+        serializer = AccountantSerializer(user)
+        return Response(serializer.data)
+
+    def destroy(self, request, pk):
+        school = self.get_school(request)
+        if not school:
+            return Response({'detail': 'No school found for this user'}, status=400)
+        try:
+            user = school.accountants.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({'detail': 'Accountant not found'}, status=404)
+
+        school.accountants.remove(user)
+        return Response(status=204)
