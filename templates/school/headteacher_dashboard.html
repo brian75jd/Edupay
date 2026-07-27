@@ -22,7 +22,12 @@
         <span></span>
         <span></span>
       </button>
-      <div class="nav-links" id="navLinks">
+      <div class="nav-links" id="navLinks" style="flex:1;justify-content:space-between;">
+        <a href="/">Home</a>
+        <img src="{% static 'images/logo.png' %}" alt="" class="navbar-school-logo">
+        <span class="navbar-school-info" style="font-size:0.85rem;font-weight:500;color:var(--text-secondary);">
+          <span id="ht-dash-sname">—</span> | <span id="ht-dash-sloc">—</span>
+        </span>
       </div>
     </div>
   </nav>
@@ -67,13 +72,6 @@
           <div>
             <h1>Dashboard</h1>
             <p>Welcome back, <span id="ht-dash-welcome">—</span></p>
-          </div>
-          <div class="dashboard-school-badge">
-            <img src="{% static 'images/logo.png' %}" alt="School" class="dashboard-school-logo">
-            <div>
-              <strong id="ht-dash-sname">—</strong>
-              <small id="ht-dash-sloc">—</small>
-            </div>
           </div>
         </div>
 

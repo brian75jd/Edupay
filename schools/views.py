@@ -273,4 +273,5 @@ class AccountantView(APIView):
             return Response({'detail': 'Accountant not found'}, status=404)
 
         school.accountants.remove(user)
+        user.delete()
         return Response(status=204)
